@@ -1,0 +1,2798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum, Explained</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --void: #05060c;
+    --panel: #0d0f1a;
+    --panel-2: #131629;
+    --border: #23273f;
+    --text: #e9ecf7;
+    --text-dim: #8b90ad;
+    --cyan: #33e5ff;
+    --violet: #9b6dff;
+    --pink: #ff5fa8;
+    --gold: #ffc857;
+    --display: "Sora", sans-serif;
+    --body: "Inter", sans-serif;
+    --mono: "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--void);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse 900px 500px at 85% -10%, #9b6dff22, transparent),
+      radial-gradient(ellipse 700px 500px at 10% 10%, #33e5ff1a, transparent),
+      radial-gradient(ellipse 800px 600px at 50% 120%, #ff5fa814, transparent);
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 90px; }
+
+  /* ---- Top nav ---- */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 36px;
+  }
+  .logo { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .logo .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  .home-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; display: none;
+  }
+  .home-btn.show { display: inline-block; }
+  .home-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .back-nav-row { max-width: 980px; margin: 0 auto; padding: 0 24px; height: 0; }
+  .back-arrow-btn {
+    display: none;
+    align-items: center; justify-content: center;
+    width: 34px; height: 34px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    top: 14px;
+  }
+  .back-arrow-btn:hover { border-color: var(--cyan); color: var(--cyan); transform: translateX(-2px); }
+  .back-arrow-btn.show { display: flex; }
+
+  /* ---- Classical vs Quantum module ---- */
+  .cvq-coins { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .cvq-coin-block { text-align: center; }
+  .cvq-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px; }
+  .cvq-coin {
+    width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 40px;
+    background: linear-gradient(145deg, #33e5ff33, #33e5ff11); border: 2px solid #33e5ff66; color: var(--cyan);
+    transition: transform 0.3s ease;
+  }
+  .cvq-coin.quantum { background: linear-gradient(145deg, #9b6dff33, #ff5fa822); border: 2px solid #9b6dff66; color: var(--violet); }
+  .cvq-coin.spinning { animation: coinSpin 0.15s linear infinite; }
+  @keyframes coinSpin {
+    0% { transform: scaleX(1); color: var(--violet); }
+    50% { transform: scaleX(0.15); color: var(--pink); }
+    100% { transform: scaleX(1); color: var(--violet); }
+  }
+  .cvq-caption { font-size: 12.5px; color: var(--text-dim); max-width: 220px; margin: 0 auto; line-height: 1.5; }
+
+  .cvq-table { display: flex; flex-direction: column; gap: 2px; }
+  .cvq-row { display: grid; grid-template-columns: 130px 1fr 1fr; gap: 12px; padding: 12px 10px; border-radius: 8px; font-size: 13.5px; }
+  .cvq-row:not(.cvq-head):nth-child(even) { background: var(--panel-2); }
+  .cvq-row.cvq-head { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); padding-bottom: 8px; }
+  .cvq-row div:first-child { font-weight: 600; color: var(--text-dim); font-size: 12.5px; }
+  .cvq-row div:nth-child(2) { color: var(--cyan); }
+  .cvq-row div:nth-child(3) { color: var(--violet); }
+
+  @media (max-width: 640px) {
+    .cvq-coins { grid-template-columns: 1fr; }
+    .cvq-row { grid-template-columns: 1fr; gap: 2px; }
+    .cvq-row div:first-child { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
+  }
+
+  /* ---- Views ---- */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- Home ---- */
+  .hero { text-align: center; margin-bottom: 44px; }
+  .hero-landing { min-height: 56vh; display: flex; flex-direction: column; justify-content: center; margin-bottom: 0; }
+  .hero .badge {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--violet); background: #9b6dff14; border: 1px solid #9b6dff33;
+    padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: var(--display); font-weight: 800; font-size: 46px; line-height: 1.1; margin: 0 0 14px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(120deg, var(--cyan), var(--violet), var(--pink));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p { color: var(--text-dim); font-size: 16px; max-width: 560px; margin: 0 auto; line-height: 1.6; }
+
+  .progress-wrap { max-width: 340px; margin: 26px auto 0; }
+  .progress-track { height: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--violet)); transition: width 0.5s ease; }
+  .progress-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--text-dim); margin-top: 8px; }
+
+  .start-here-btn {
+    margin-top: 20px;
+    background: linear-gradient(120deg, var(--cyan), var(--violet));
+    border: none; color: #05060c; font-family: var(--display); font-weight: 700; font-size: 15px;
+    padding: 14px 30px; border-radius: 26px; cursor: pointer; transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .start-here-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+
+  .card-check {
+    position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%;
+    background: #33e5a1; color: #05060c; font-size: 12px; font-weight: 700;
+    display: none; align-items: center; justify-content: center;
+  }
+  .card-check.show { display: flex; }
+  .module-card { position: relative; }
+
+  /* ---- Why Quantum Matters page ---- */
+  .why-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .why-stat { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px 14px; text-align: center; }
+  .why-stat-num { font-family: var(--display); font-weight: 800; font-size: 21px; background: linear-gradient(120deg, var(--cyan), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .why-stat-label { font-size: 11.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.4; }
+
+  .why-body { font-size: 15px; line-height: 1.75; color: var(--text); margin: 0; }
+
+  .why-uses-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .why-use { display: flex; gap: 12px; align-items: flex-start; }
+  .why-use-icon { font-size: 24px; flex-shrink: 0; }
+  .why-use b { font-size: 14px; }
+  .why-use p { font-size: 13px; color: var(--text-dim); margin: 4px 0 0; line-height: 1.5; }
+
+  @media (max-width: 720px) {
+    .why-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .why-uses-grid { grid-template-columns: 1fr; }
+  }
+
+  .module-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .module-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 26px 20px; cursor: pointer; transition: all 0.25s ease; text-align: left; position: relative; overflow: hidden;
+  }
+  .module-card:hover { transform: translateY(-4px); border-color: var(--cyan); box-shadow: 0 20px 50px -25px #33e5ff33; }
+  .module-card .m-num { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
+  .module-card .m-icon { font-size: 32px; margin: 12px 0; }
+  .module-card h3 { font-family: var(--display); font-size: 18px; margin: 0 0 8px; font-weight: 600; }
+  .module-card p { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+  /* ---- Module shell ---- */
+  .module-header { text-align: center; margin-bottom: 22px; }
+  .module-header .m-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); }
+  .module-header h2 { font-family: var(--display); font-weight: 700; font-size: 30px; margin: 8px 0 6px; }
+  .module-header .m-sub { color: var(--text-dim); font-size: 14px; }
+
+  .viz-panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; margin-bottom: 18px; position: relative;
+  }
+  .viz-canvas-wrap { width: 100%; height: 320px; border-radius: 12px; overflow: hidden; background: #04050a; position: relative; }
+  .viz-canvas-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  .viz-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; justify-content: center; }
+  .ctrl-btn {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--mono); font-size: 12px; padding: 9px 16px; border-radius: 10px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .ctrl-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .ctrl-btn.primary { background: linear-gradient(120deg, var(--cyan), var(--violet)); color: #05060c; border: none; font-weight: 600; }
+  .ctrl-btn.primary:hover { color: #05060c; filter: brightness(1.1); }
+
+  .viz-readout {
+    margin-top: 12px; text-align: center; font-family: var(--mono); font-size: 13px; color: var(--text-dim);
+    min-height: 20px;
+  }
+  .viz-readout .hl { color: var(--gold); }
+
+  /* ---- Explanation panel ---- */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 24px; margin-bottom: 18px;
+  }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .panel-title { font-family: var(--display); font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .level-tabs { display: flex; gap: 6px; background: var(--panel-2); padding: 4px; border-radius: 10px; }
+  .level-tab {
+    background: transparent; border: none; color: var(--text-dim); font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; text-transform: uppercase; padding: 7px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .level-tab.active { background: var(--cyan); color: #05060c; font-weight: 600; }
+
+  .explain-text {
+    font-size: 15.5px; line-height: 1.75; color: var(--text); min-height: 60px;
+  }
+  .explain-loading { color: var(--text-dim); font-family: var(--mono); font-size: 13px; }
+  .explain-loading .p { color: var(--violet); animation: blink 1.3s infinite; }
+  @keyframes blink { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+
+  /* ---- Tutor chat ---- */
+  .chat-log { max-height: 220px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+  .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+  .chat-msg.user { align-self: flex-end; background: var(--panel-2); border: 1px solid var(--border); }
+  .chat-msg.ai { align-self: flex-start; background: #9b6dff14; border: 1px solid #9b6dff33; }
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input {
+    flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: var(--body); font-size: 14px; padding: 11px 14px; outline: none;
+  }
+  .chat-input:focus { border-color: var(--violet); }
+  .chat-send {
+    background: var(--violet); border: none; color: white; font-family: var(--mono); font-size: 12px;
+    padding: 0 18px; border-radius: 10px; cursor: pointer; font-weight: 600;
+  }
+  .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+  .chat-empty { color: var(--text-dim); font-size: 13px; font-style: italic; }
+
+  /* ---- Quiz ---- */
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q .qq-text { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+  .quiz-opt {
+    display: block; width: 100%; text-align: left; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--body); font-size: 14px; padding: 11px 14px; border-radius: 10px;
+    cursor: pointer; margin-bottom: 8px; transition: all 0.15s ease;
+  }
+  .quiz-opt:hover { border-color: var(--cyan); }
+  .quiz-opt.correct { border-color: #33e5a1; background: #33e5a114; }
+  .quiz-opt.incorrect { border-color: var(--pink); background: #ff5fa814; }
+  .quiz-opt.disabled { pointer-events: none; }
+  .quiz-explain { font-size: 13px; color: var(--text-dim); margin-top: 4px; padding-left: 4px; display: none; }
+  .quiz-explain.show { display: block; }
+  .quiz-score { text-align: center; font-family: var(--mono); font-size: 14px; color: var(--gold); margin-top: 6px; }
+
+  .error-box {
+    display: none; border: 1px solid var(--pink); color: #ff9fc6; background: #ff5fa815;
+    padding: 10px 14px; border-radius: 8px; font-family: var(--mono); font-size: 12px; margin-top: 10px;
+  }
+
+  .next-module-btn {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    background: var(--panel);
+    border: 1.5px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 15px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .next-module-btn:hover {
+    background: linear-gradient(120deg, var(--cyan), var(--violet));
+    color: #05060c;
+    transform: translateY(-2px);
+  }
+
+  footer { text-align: center; margin-top: 50px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #363a52; }
+
+  /* ---- Roadmap page ---- */
+  .domain-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px; cursor: pointer; transition: all 0.25s ease;
+  }
+  .domain-card:hover { transform: translateY(-3px); border-color: var(--cyan); box-shadow: 0 20px 45px -25px #33e5ff33; }
+  .domain-foundations { cursor: pointer; border: 1.5px solid var(--cyan); background: linear-gradient(135deg, #33e5ff0d, #9b6dff0d); margin-bottom: 6px; }
+  .domain-card-inner { display: flex; align-items: center; gap: 16px; }
+  .domain-num { display: none; }
+  .domain-icon { font-size: 30px; flex-shrink: 0; }
+  .domain-text { flex: 1; }
+  .domain-text h3 { font-family: var(--display); font-size: 17px; margin: 0 0 4px; font-weight: 600; }
+  .domain-text p { font-size: 13px; color: var(--text-dim); margin: 0; line-height: 1.5; }
+  .domain-progress {
+    font-family: var(--mono); font-size: 11px; color: var(--cyan); white-space: nowrap;
+    background: #33e5ff14; border: 1px solid #33e5ff33; padding: 6px 12px; border-radius: 20px;
+  }
+  .domain-status {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; white-space: nowrap;
+    padding: 5px 10px; border-radius: 14px; text-transform: uppercase;
+  }
+  .domain-branch-label {
+    text-align: center; font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.1em; margin: 18px 0; text-transform: uppercase;
+  }
+  .domain-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .domain-grid .domain-card .domain-num {
+    display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--violet);
+    margin-bottom: 8px;
+  }
+  .domain-grid .domain-card-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .domain-grid .domain-status { align-self: flex-start; }
+
+  /* ---- Domain topic listing pages ---- */
+  .topic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .topic-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 20px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .topic-card:hover { border-color: var(--cyan); transform: translateX(3px); }
+  .topic-icon { font-size: 26px; flex-shrink: 0; }
+  .topic-info { flex: 1; }
+  .topic-info h4 { margin: 0 0 3px; font-family: var(--display); font-size: 15.5px; font-weight: 600; }
+  .topic-info p { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+  .topic-badge {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 12px; white-space: nowrap; flex-shrink: 0;
+  }
+  .topic-badge.built { background: #33e5a114; color: #33e5a1; border: 1px solid #33e5a133; }
+  .topic-badge.soon { background: #ffc85714; color: var(--gold); border: 1px solid #ffc85733; }
+
+  /* ---- Stub resource cards ---- */
+  .resource-card {
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; text-decoration: none; color: var(--text);
+    transition: border-color 0.2s ease;
+  }
+  .resource-card:hover { border-color: var(--cyan); }
+  .resource-icon { font-size: 18px; }
+  .resource-info b { font-size: 13.5px; display: block; }
+  .resource-info span { font-size: 11.5px; color: var(--text-dim); }
+
+  /* ---- BB84 crypto visual ---- */
+  .bb84-row { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+  .bb84-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); width: 70px; flex-shrink: 0; }
+  .photon-chip {
+    width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 700; flex-shrink: 0; transition: opacity 0.2s ease;
+  }
+  .photon-chip.rect { border-radius: 50%; }
+  .photon-chip.diag { transform: rotate(45deg); border-radius: 4px; }
+  .photon-chip.diag span { transform: rotate(-45deg); display: block; }
+  .photon-chip.bit0 { background: #33e5ff33; color: #33e5ff; border: 1px solid #33e5ff55; }
+  .photon-chip.bit1 { background: #ff5fa833; color: #ff5fa8; border: 1px solid #ff5fa855; }
+  .photon-chip.discard { opacity: 0.22; }
+  .photon-chip.kept { box-shadow: 0 0 0 2px var(--gold); }
+
+  @media (max-width: 720px) {
+    .domain-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 720px) {
+    .module-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav">
+    <div class="logo" id="logoBtn"><span class="dot"></span>Quantum, Explained</div>
+    <div style="display:flex; gap:8px;">
+      <button class="home-btn show" id="whyBtn" style="border-color:#9b6dff55; color:#c9b8ff;">✦ Why Quantum Matters</button>
+      <button class="home-btn" id="homeBtn">🗺️ Roadmap</button>
+    </div>
+  </div>
+
+  <div class="back-nav-row" id="backNavRow">
+    <button class="back-arrow-btn" id="backArrowBtn">←</button>
+  </div>
+
+  <!-- HOME -->
+  <div class="view active" id="view-home">
+    <div class="hero hero-landing">
+      <div class="badge">quantum fundamentals, made visual</div>
+      <h1>The <span class="grad">weirdest ideas</span><br>in physics, made simple</h1>
+      <p>A structured roadmap through quantum science — starting with shared foundations, then branching into computing, security, and sensing. Ask the AI tutor anything along the way — no physics background required.</p>
+      <button class="start-here-btn" id="startHereBtn">▶ Start Here</button>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="view" id="view-roadmap">
+    <div class="module-header">
+      <div class="m-tag">The Learning Roadmap</div>
+      <h2>One Foundation, Four Paths</h2>
+      <div class="m-sub">Everyone starts with the shared Foundations. Once you've built that base, branch into whichever specialization interests you most.</div>
+    </div>
+
+    <div class="domain-card domain-foundations" id="domainFoundations">
+      <div class="domain-card-inner">
+        <div class="domain-num">CORE</div>
+        <div class="domain-icon">🧭</div>
+        <div class="domain-text">
+          <h3>Foundations</h3>
+          <p>The shared curriculum everyone needs first: superposition, entanglement, measurement, uncertainty, and more. 10 fully interactive modules.</p>
+        </div>
+        <div class="domain-progress" id="domainFoundationsProgress">0 / 10 complete</div>
+      </div>
+    </div>
+
+    <div class="domain-branch-label">↓ then branch into ↓</div>
+
+    <div class="domain-grid">
+      <div class="domain-card" data-domain="computing">
+        <div class="domain-card-inner">
+          <div class="domain-num">01 · COMPUTING &amp; INFORMATION SCIENCE</div>
+          <div class="domain-icon">💻</div>
+          <div class="domain-text">
+            <h3>Computing &amp; Information Science</h3>
+            <p>Qubits, gates, and the algorithms that give quantum computers a real edge.</p>
+          </div>
+          <div class="domain-status" id="status-computing"></div>
+        </div>
+      </div>
+      <div class="domain-card" data-domain="security">
+        <div class="domain-card-inner">
+          <div class="domain-num">02 · COMMUNICATION &amp; SECURITY</div>
+          <div class="domain-icon">🔐</div>
+          <div class="domain-text">
+            <h3>Communication &amp; Security</h3>
+            <p>Quantum cryptography and teleportation — using entanglement to communicate securely.</p>
+          </div>
+          <div class="domain-status" id="status-security"></div>
+        </div>
+      </div>
+      <div class="domain-card" data-domain="sensing">
+        <div class="domain-card-inner">
+          <div class="domain-num">03 · SENSING, METROLOGY &amp; IMAGING</div>
+          <div class="domain-icon">🔬</div>
+          <div class="domain-text">
+            <h3>Sensing, Metrology &amp; Imaging</h3>
+            <p>Using quantum effects to measure and image the world more precisely than ever before.</p>
+          </div>
+          <div class="domain-status" id="status-sensing"></div>
+        </div>
+      </div>
+      <div class="domain-card" data-domain="theory">
+        <div class="domain-card-inner">
+          <div class="domain-num">04 · ADVANCED THEORY</div>
+          <div class="domain-icon">🌌</div>
+          <div class="domain-text">
+            <h3>Advanced Theory</h3>
+            <p>Quantum field theory and quantum gravity — where quantum mechanics meets its biggest open questions.</p>
+          </div>
+          <div class="domain-status" id="status-theory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULES LIST (FOUNDATIONS DOMAIN) -->
+  <div class="view" id="view-modules">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Foundations</div>
+      <h2>Foundations</h2>
+      <div class="m-sub">The shared curriculum every specialization builds on. Go in order for the full journey, or jump straight to whatever interests you.</div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="homeProgressFill"></div></div>
+        <div class="progress-text" id="homeProgressText">0 / 10 modules explored</div>
+      </div>
+    </div>
+    <div class="module-grid">
+      <div class="module-card" data-module="superposition">
+        <div class="card-check" id="check-superposition">✓</div>
+        <div class="m-num">01 · FOUNDATIONS</div>
+        <div class="m-icon">⚛️</div>
+        <h3>Superposition &amp; Measurement</h3>
+        <p>How something can be in two states at once — and what happens the moment you look.</p>
+      </div>
+      <div class="module-card" data-module="duality">
+        <div class="card-check" id="check-duality">✓</div>
+        <div class="m-num">02 · FOUNDATIONS</div>
+        <div class="m-icon">🌊</div>
+        <h3>Wave–Particle Duality</h3>
+        <p>The famous double-slit experiment: is light a wave, a particle, or something else entirely?</p>
+      </div>
+      <div class="module-card" data-module="entanglement">
+        <div class="card-check" id="check-entanglement">✓</div>
+        <div class="m-num">03 · FOUNDATIONS</div>
+        <div class="m-icon">🔗</div>
+        <h3>Quantum Entanglement</h3>
+        <p>"Spooky action at a distance" — two particles that stay correlated no matter how far apart.</p>
+      </div>
+      <div class="module-card" data-module="uncertainty">
+        <div class="card-check" id="check-uncertainty">✓</div>
+        <div class="m-num">04 · FOUNDATIONS</div>
+        <div class="m-icon">📏</div>
+        <h3>Heisenberg Uncertainty</h3>
+        <p>Why you can never know a particle's exact position and momentum at the same time.</p>
+      </div>
+      <div class="module-card" data-module="tunneling">
+        <div class="card-check" id="check-tunneling">✓</div>
+        <div class="m-num">05 · FOUNDATIONS</div>
+        <div class="m-icon">🚧</div>
+        <h3>Quantum Tunneling</h3>
+        <p>How particles occasionally pass straight through barriers they classically shouldn't cross.</p>
+      </div>
+      <div class="module-card" data-module="spin">
+        <div class="card-check" id="check-spin">✓</div>
+        <div class="m-num">06 · FOUNDATIONS</div>
+        <div class="m-icon">🧲</div>
+        <h3>Quantum Spin</h3>
+        <p>The Stern-Gerlach experiment: proof that nature comes in fixed, discrete steps, not a smooth range.</p>
+      </div>
+      <div class="module-card" data-module="cat">
+        <div class="card-check" id="check-cat">✓</div>
+        <div class="m-num">07 · FOUNDATIONS</div>
+        <div class="m-icon">🐱</div>
+        <h3>Schrödinger's Cat &amp; Decoherence</h3>
+        <p>Why we never see everyday objects in superposition, even though the particles inside them can be.</p>
+      </div>
+      <div class="module-card" data-module="cloning">
+        <div class="card-check" id="check-cloning">✓</div>
+        <div class="m-num">08 · FOUNDATIONS</div>
+        <div class="m-icon">🚫</div>
+        <h3>The No-Cloning Theorem</h3>
+        <p>Why you can't make a perfect copy of an unknown qubit — and why that's actually a good thing.</p>
+      </div>
+      <div class="module-card" data-module="computing">
+        <div class="card-check" id="check-computing">✓</div>
+        <div class="m-num">09 · APPLICATIONS</div>
+        <div class="m-icon">💻</div>
+        <h3>Qubits &amp; Quantum Gates</h3>
+        <p>The building blocks of quantum computers — and why this field is exploding right now.</p>
+      </div>
+      <div class="module-card" data-module="algorithms">
+        <div class="card-check" id="check-algorithms">✓</div>
+        <div class="m-num">10 · APPLICATIONS</div>
+        <div class="m-icon">🚀</div>
+        <h3>Quantum Algorithms &amp; Real-World Uses</h3>
+        <p>How quantum computers can search and factor faster than any classical computer ever could.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN: COMPUTING & INFORMATION SCIENCE -->
+  <div class="view" id="view-domain-computing">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Computing &amp; Information Science</div>
+      <h2>Computing &amp; Information Science</h2>
+      <div class="m-sub">Qubits, gates, and the algorithms that give quantum computers a real edge.</div>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card" data-goto-module="classicalvsquantum">
+        <div class="topic-icon">⚖️</div>
+        <div class="topic-info"><h4>Classical vs. Quantum Computing</h4><p>The simplest possible side-by-side comparison — start here if you're new.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+      <div class="topic-card" data-goto-module="computing">
+        <div class="topic-icon">💻</div>
+        <div class="topic-info"><h4>Qubits &amp; Quantum Gates</h4><p>The building blocks of quantum computers.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+      <div class="topic-card" data-goto-module="algorithms">
+        <div class="topic-icon">🚀</div>
+        <div class="topic-info"><h4>Quantum Algorithms &amp; Real-World Uses</h4><p>Grover's, Shor's, and why they matter.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+      <div class="topic-card" data-goto-module="superdense">
+        <div class="topic-icon">📊</div>
+        <div class="topic-info"><h4>Quantum Information Theory (Superdense Coding)</h4><p>Send 2 classical bits of information by physically transmitting just 1 qubit.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN: COMMUNICATION & SECURITY -->
+  <div class="view" id="view-domain-security">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Communication &amp; Security</div>
+      <h2>Communication &amp; Security</h2>
+      <div class="m-sub">Using quantum effects to communicate — and to detect eavesdroppers.</div>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card" data-goto-module="cryptography">
+        <div class="topic-icon">🔐</div>
+        <div class="topic-info"><h4>Quantum Cryptography (BB84)</h4><p>Run a real quantum key exchange and try to catch an eavesdropper.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+      <div class="topic-card" data-goto-module="teleportation">
+        <div class="topic-icon">📡</div>
+        <div class="topic-info"><h4>Quantum Teleportation</h4><p>Transfer an unknown quantum state to Bob, using entanglement plus a classical channel.</p></div>
+        <div class="topic-badge built">✅ Built</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN: SENSING, METROLOGY & IMAGING -->
+  <div class="view" id="view-domain-sensing">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Sensing, Metrology &amp; Imaging</div>
+      <h2>Sensing, Metrology &amp; Imaging</h2>
+      <div class="m-sub">Using quantum precision to measure and image the world better than classical methods can.</div>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card" data-goto-stub="metrology">
+        <div class="topic-icon">📐</div>
+        <div class="topic-info"><h4>Quantum Metrology</h4><p>Using entanglement to measure quantities with less uncertainty than any classical method allows.</p></div>
+        <div class="topic-badge soon">🔜 Coming Soon</div>
+      </div>
+      <div class="topic-card" data-goto-stub="sensing">
+        <div class="topic-icon">🧪</div>
+        <div class="topic-info"><h4>Quantum Sensing</h4><p>Ultra-sensitive detectors for magnetic fields, gravity, and time itself.</p></div>
+        <div class="topic-badge soon">🔜 Coming Soon</div>
+      </div>
+      <div class="topic-card" data-goto-stub="imaging">
+        <div class="topic-icon">🖼️</div>
+        <div class="topic-info"><h4>Quantum Imaging</h4><p>Forming images using entangled photons, sometimes without the light ever touching the object.</p></div>
+        <div class="topic-badge soon">🔜 Coming Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN: ADVANCED THEORY -->
+  <div class="view" id="view-domain-theory">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Advanced Theory</div>
+      <h2>Advanced Theory</h2>
+      <div class="m-sub">Where quantum mechanics meets its biggest open questions.</div>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card" data-goto-stub="qft">
+        <div class="topic-icon">🌊</div>
+        <div class="topic-info"><h4>Quantum Field Theory</h4><p>Treating particles as excitations of underlying fields — the language of modern particle physics.</p></div>
+        <div class="topic-badge soon">🔜 Coming Soon</div>
+      </div>
+      <div class="topic-card" data-goto-stub="gravity">
+        <div class="topic-icon">🕳️</div>
+        <div class="topic-info"><h4>Quantum Gravity</h4><p>The unsolved puzzle of reconciling quantum mechanics with general relativity.</p></div>
+        <div class="topic-badge soon">🔜 Coming Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERIC STUB PAGE -->
+  <div class="view" id="view-stub">
+    <div class="module-header">
+      <div class="m-tag" id="stubTag"></div>
+      <h2 id="stubTitle"></h2>
+      <div class="m-sub" id="stubSub"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🔜 On the Roadmap</div></div>
+      <p class="why-body" id="stubDescription"></p>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">📚 Curated Resources to Start With</div></div>
+      <div id="stubResources"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">💬 Ask the Quantum Tutor</div></div>
+      <div class="chat-log" id="stub-chatLog"><div class="chat-empty">The full interactive module isn't built yet, but the tutor can still answer questions about this topic.</div></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="stub-chatInput" placeholder="ask a question about this topic">
+        <button class="chat-send" id="stub-chatSend">Ask</button>
+      </div>
+      <div class="error-box" id="stub-chatError"></div>
+    </div>
+  </div>
+
+  <!-- MODULE: QUANTUM CRYPTOGRAPHY (BB84) -->
+  <div class="view" id="view-cryptography">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Communication &amp; Security</div>
+      <h2>Quantum Cryptography (BB84)</h2>
+      <div class="m-sub">Run a quantum key exchange between Alice and Bob — then try slipping an eavesdropper in and see if they get caught.</div>
+    </div>
+    <div class="viz-panel">
+      <div id="bb84Container"></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="bb84RunBtn">Run Key Exchange (no eavesdropper)</button>
+        <button class="ctrl-btn" id="bb84EveBtn">Run With Eve Intercepting</button>
+      </div>
+      <div class="viz-readout" id="bb84Readout">Run an exchange to see Alice and Bob build a shared secret key.</div>
+    </div>
+    <div id="cryptography-panels"></div>
+    <button class="next-module-btn" id="bb84BackBtn">← Back to Communication &amp; Security</button>
+  </div>
+
+  <!-- MODULE: CLASSICAL VS QUANTUM COMPUTING -->
+  <div class="view" id="view-classicalvsquantum">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Computing &amp; Information Science</div>
+      <h2>Classical vs. Quantum Computing</h2>
+      <div class="m-sub">The simplest way to see the difference: try flipping both coins below.</div>
+    </div>
+
+    <div class="viz-panel">
+      <div class="cvq-coins">
+        <div class="cvq-coin-block">
+          <div class="cvq-label">Classical Bit</div>
+          <div class="cvq-coin" id="classicalCoin">0</div>
+          <button class="ctrl-btn" id="classicalFlipBtn">Flip It</button>
+          <div class="cvq-caption">Always one clear value. Like a coin lying flat on a table — heads or tails, no in-between.</div>
+        </div>
+        <div class="cvq-coin-block">
+          <div class="cvq-label">Quantum Bit (Qubit)</div>
+          <div class="cvq-coin quantum" id="quantumCoin">?</div>
+          <button class="ctrl-btn primary" id="quantumSpinBtn">Spin It</button>
+          <button class="ctrl-btn" id="quantumMeasureBtn">Measure It</button>
+          <div class="cvq-caption" id="quantumCaption">Like a coin spinning in the air — genuinely both heads <i>and</i> tails until it lands.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">📋 The Simple Comparison</div></div>
+      <div class="cvq-table">
+        <div class="cvq-row cvq-head"><div>&nbsp;</div><div>Classical Computer</div><div>Quantum Computer</div></div>
+        <div class="cvq-row"><div>Basic unit</div><div>A bit: 0 or 1</div><div>A qubit: 0, 1, or both at once</div></div>
+        <div class="cvq-row"><div>How it thinks</div><div>Checks one possibility at a time</div><div>Explores many possibilities at once</div></div>
+        <div class="cvq-row"><div>Great at</div><div>Everyday tasks — apps, browsing, spreadsheets</div><div>Specialized problems — simulating molecules, optimization, cracking certain codes</div></div>
+        <div class="cvq-row"><div>How mature it is</div><div>Extremely reliable, in every device you own</div><div>Still early — needs extreme cold and careful engineering</div></div>
+        <div class="cvq-row"><div>You've used one today</div><div>Yes — it's the phone or laptop you're reading this on</div><div>Probably not yet — but IBM, Google, and others run real ones today</div></div>
+      </div>
+    </div>
+
+    <div id="classicalvsquantum-panels"></div>
+    <button class="next-module-btn" id="cvqBackBtn">← Back to Computing &amp; Information Science</button>
+  </div>
+
+  <!-- MODULE: SUPERDENSE CODING (Quantum Information Theory) -->
+  <div class="view" id="view-superdense">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Computing &amp; Information Science</div>
+      <h2>Quantum Information Theory: Superdense Coding</h2>
+      <div class="m-sub">Pick a 2-bit message. Watch Alice send it to Bob using entanglement plus just one physical qubit.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="sd-wrap" style="height:260px;"><canvas id="sdCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" data-msg="00">Send Message 00</button>
+        <button class="ctrl-btn primary" data-msg="01">Send Message 01</button>
+        <button class="ctrl-btn primary" data-msg="10">Send Message 10</button>
+        <button class="ctrl-btn primary" data-msg="11">Send Message 11</button>
+        <button class="ctrl-btn" id="sdResetBtn">New Entangled Pair</button>
+      </div>
+      <div class="viz-readout" id="sdReadout">Pick a message above to send it using just one qubit.</div>
+    </div>
+    <div id="superdense-panels"></div>
+    <button class="next-module-btn" id="sdBackBtn">← Back to Computing &amp; Information Science</button>
+  </div>
+
+  <!-- MODULE: QUANTUM TELEPORTATION -->
+  <div class="view" id="view-teleportation">
+    <div class="module-header">
+      <div class="m-tag">🗺️ Roadmap → Communication &amp; Security</div>
+      <h2>Quantum Teleportation</h2>
+      <div class="m-sub">Alice has an unknown quantum state. Watch her transfer it to Bob — destroying her own copy in the process.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="tp-wrap" style="height:260px;"><canvas id="tpCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="tpRunBtn">Teleport the State</button>
+        <button class="ctrl-btn" id="tpResetBtn">New Unknown State</button>
+      </div>
+      <div class="viz-readout" id="tpReadout">Alice holds an unknown quantum state (gold) that Bob needs — without moving the particle itself.</div>
+    </div>
+    <div id="teleportation-panels"></div>
+    <button class="next-module-btn" id="tpBackBtn">← Back to Communication &amp; Security</button>
+  </div>
+
+  <!-- WHY QUANTUM MATTERS -->
+  <div class="view" id="view-why">
+    <div class="module-header">
+      <div class="m-tag">The Big Picture</div>
+      <h2>Why Quantum Matters Right Now</h2>
+      <div class="m-sub">This isn't just an interesting physics niche anymore — it's becoming a real industry, fast.</div>
+    </div>
+
+    <div class="why-stats-grid">
+      <div class="why-stat"><div class="why-stat-num">~$1.9B → $3B+</div><div class="why-stat-label">global quantum market, 2025 → 2028 (projected)</div></div>
+      <div class="why-stat"><div class="why-stat-num">400%+</div><div class="why-stat-label">rise in quantum job postings in recent years</div></div>
+      <div class="why-stat"><div class="why-stat-num">$166K–$200K+</div><div class="why-stat-label">typical salary range for quantum computing roles</div></div>
+      <div class="why-stat"><div class="why-stat-num">250,000+</div><div class="why-stat-label">new quantum professionals projected to be needed by 2030</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🌍 Why the sudden urgency?</div></div>
+      <p class="why-body">For decades quantum computing lived almost entirely in research labs. That's changing: governments, universities, and major tech companies are now investing heavily because quantum computers are approaching the point where they can outperform classical computers on specific, valuable problems — not everything, but the right things. That shift from "interesting theory" to "actual capability" is exactly why hiring, funding, and course offerings in this space have accelerated so quickly.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🏭 Where it's actually being used</div></div>
+      <div class="why-uses-grid">
+        <div class="why-use"><div class="why-use-icon">🔐</div><div><b>Cryptography &amp; Security</b><p>Both breaking current encryption methods and building new quantum-safe ones.</p></div></div>
+        <div class="why-use"><div class="why-use-icon">💊</div><div><b>Drug &amp; Materials Discovery</b><p>Simulating molecules accurately enough to speed up finding new medicines and materials.</p></div></div>
+        <div class="why-use"><div class="why-use-icon">📈</div><div><b>Finance &amp; Optimization</b><p>Solving complex portfolio and logistics optimization problems classical computers struggle with.</p></div></div>
+        <div class="why-use"><div class="why-use-icon">🤖</div><div><b>AI &amp; Machine Learning</b><p>Exploring quantum-accelerated approaches to training and running certain ML models.</p></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">🎯 What you're actually building toward</div></div>
+      <p class="why-body">Every module on this site maps directly to real skills the industry is hiring for right now: superposition and measurement, entanglement, qubits and gates, and quantum algorithms are the exact core concepts listed in quantum job postings for roles like quantum software engineer, quantum algorithm researcher, and quantum hardware engineer. You don't need a PhD to start — a solid grasp of these fundamentals, plus programming, is genuinely enough to begin exploring this field seriously.</p>
+    </div>
+
+    <button class="ctrl-btn primary" id="whyStartBtn" style="display:block; margin: 24px auto 0; padding: 14px 28px;">Start Learning →</button>
+  </div>
+
+  <!-- MODULE: SUPERPOSITION -->
+  <div class="view" id="view-superposition">
+    <div class="module-header">
+      <div class="m-tag">01 · Foundations</div>
+      <h2>Superposition &amp; Measurement</h2>
+      <div class="m-sub">Drag the sphere to rotate it. The arrow is the qubit's state.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="blochWrap"></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn" data-bloch="0">Set to |0⟩</button>
+        <button class="ctrl-btn" data-bloch="1">Set to |1⟩</button>
+        <button class="ctrl-btn primary" data-bloch="plus">Put in Superposition |+⟩</button>
+        <button class="ctrl-btn" id="measureBtn">Measure!</button>
+      </div>
+      <div class="viz-readout" id="blochReadout">The arrow points to |0⟩ — a definite state.</div>
+    </div>
+    <div id="superposition-panels"></div>
+    <button class="next-module-btn" data-current="superposition">Next: Wave–Particle Duality →</button>
+  </div>
+
+  <!-- MODULE: DUALITY -->
+  <div class="view" id="view-duality">
+    <div class="module-header">
+      <div class="m-tag">02 · Foundations</div>
+      <h2>Wave–Particle Duality</h2>
+      <div class="m-sub">Particles fired one at a time through two slits toward a detector screen.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="duality-wrap"><canvas id="dualityCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="dualityToggle">Turn ON Which-Path Detector</button>
+        <button class="ctrl-btn" id="dualityReset">Reset Screen</button>
+      </div>
+      <div class="viz-readout" id="dualityReadout">Detector OFF — particles build an <span class="hl">interference pattern</span>, like a wave passing through both slits at once.</div>
+    </div>
+    <div id="duality-panels"></div>
+    <button class="next-module-btn" data-current="duality">Next: Quantum Entanglement →</button>
+  </div>
+
+  <!-- MODULE: ENTANGLEMENT -->
+  <div class="view" id="view-entanglement">
+    <div class="module-header">
+      <div class="m-tag">03 · Foundations</div>
+      <h2>Quantum Entanglement</h2>
+      <div class="m-sub">Two particles, one shared fate — until you measure one of them.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="entWrap" style="height:260px;"></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="measureLeftBtn">Measure Left Particle</button>
+        <button class="ctrl-btn" id="entResetBtn">Create New Entangled Pair</button>
+      </div>
+      <div class="viz-readout" id="entReadout">Both particles are unmeasured — entangled, correlated, undetermined.</div>
+    </div>
+    <div id="entanglement-panels"></div>
+    <button class="next-module-btn" data-current="entanglement">Next: Heisenberg Uncertainty →</button>
+  </div>
+
+  <!-- MODULE: UNCERTAINTY -->
+  <div class="view" id="view-uncertainty">
+    <div class="module-header">
+      <div class="m-tag">04 · Foundations</div>
+      <h2>Heisenberg Uncertainty Principle</h2>
+      <div class="m-sub">Drag the slider — pinning down position always blurs out momentum, and vice versa.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="unc-wrap"><canvas id="uncCanvas"></canvas></div>
+      <div class="viz-controls" style="flex-direction: column; align-items: center; gap: 6px;">
+        <input type="range" id="uncSlider" min="0" max="100" value="50" style="width: 260px;">
+        <div style="display:flex; justify-content: space-between; width: 260px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;">
+          <span>KNOW POSITION</span><span>KNOW MOMENTUM</span>
+        </div>
+      </div>
+      <div class="viz-readout" id="uncReadout">Balanced — moderate uncertainty in both position and momentum.</div>
+    </div>
+    <div id="uncertainty-panels"></div>
+    <button class="next-module-btn" data-current="uncertainty">Next: Quantum Tunneling →</button>
+  </div>
+
+  <!-- MODULE: TUNNELING -->
+  <div class="view" id="view-tunneling">
+    <div class="module-header">
+      <div class="m-tag">05 · Foundations</div>
+      <h2>Quantum Tunneling</h2>
+      <div class="m-sub">Fire particles at a barrier. Sometimes, against classical odds, they get through.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="tun-wrap"><canvas id="tunCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="tunFireBtn">Fire Particle</button>
+        <button class="ctrl-btn" id="tunResetBtn">Reset Stats</button>
+      </div>
+      <div class="viz-controls" style="flex-direction: column; align-items: center; gap: 6px; margin-top: 4px;">
+        <input type="range" id="tunSlider" min="20" max="90" value="50" style="width: 260px;">
+        <div style="font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;">BARRIER THICKNESS</div>
+      </div>
+      <div class="viz-readout" id="tunReadout">Attempts: 0 · Tunneled through: 0</div>
+    </div>
+    <div id="tunneling-panels"></div>
+    <button class="next-module-btn" data-current="tunneling">Next: Quantum Spin →</button>
+  </div>
+
+  <!-- MODULE: SPIN -->
+  <div class="view" id="view-spin">
+    <div class="module-header">
+      <div class="m-tag">06 · Foundations</div>
+      <h2>Quantum Spin</h2>
+      <div class="m-sub">Send a beam of particles through a magnetic field. Watch it split into exactly two beams — never a smooth spread.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="spin-wrap"><canvas id="spinCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn primary" id="spinFireBtn">Send Particle Beam</button>
+        <button class="ctrl-btn" id="spinResetBtn">Reset</button>
+      </div>
+      <div class="viz-readout" id="spinReadout">Up: 0 · Down: 0 — no beam sent yet.</div>
+    </div>
+    <div id="spin-panels"></div>
+    <button class="next-module-btn" data-current="spin">Next: Schrödinger's Cat &amp; Decoherence →</button>
+  </div>
+
+  <!-- MODULE: SCHRODINGER'S CAT -->
+  <div class="view" id="view-cat">
+    <div class="module-header">
+      <div class="m-tag">07 · Foundations</div>
+      <h2>Schrödinger's Cat &amp; Decoherence</h2>
+      <div class="m-sub">Drag the slider to increase how much the system interacts with its environment.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="cat-wrap" style="height:260px; display:flex; align-items:center; justify-content:center;">
+        <div id="catBox" style="font-size:96px; transition: opacity 0.15s ease;">🐱</div>
+      </div>
+      <div class="viz-controls" style="flex-direction: column; align-items: center; gap: 6px;">
+        <input type="range" id="catSlider" min="0" max="100" value="5" style="width: 260px;">
+        <div style="display:flex; justify-content: space-between; width: 260px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;">
+          <span>FULLY ISOLATED</span><span>FULLY EXPOSED</span>
+        </div>
+      </div>
+      <div class="viz-readout" id="catReadout">Fully isolated — the system stays in superposition (flickering between both outcomes) indefinitely.</div>
+    </div>
+    <div id="cat-panels"></div>
+    <button class="next-module-btn" data-current="cat">Next: The No-Cloning Theorem →</button>
+  </div>
+
+  <!-- MODULE: NO-CLONING -->
+  <div class="view" id="view-cloning">
+    <div class="module-header">
+      <div class="m-tag">08 · Foundations</div>
+      <h2>The No-Cloning Theorem</h2>
+      <div class="m-sub">Try to copy a classical bit versus an unknown qubit — only one of them works.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="clone-wrap" style="height:220px;"><canvas id="cloneCanvas"></canvas></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn" id="cloneClassicalBtn">Attempt: Copy Classical Bit</button>
+        <button class="ctrl-btn primary" id="cloneQuantumBtn">Attempt: Copy Quantum State</button>
+        <button class="ctrl-btn" id="cloneResetBtn">Reset</button>
+      </div>
+      <div class="viz-readout" id="cloneReadout">Pick an attempt above to see what happens.</div>
+    </div>
+    <div id="cloning-panels"></div>
+    <button class="next-module-btn" data-current="cloning">Next: Qubits &amp; Quantum Gates →</button>
+  </div>
+
+  <!-- MODULE: COMPUTING -->
+  <div class="view" id="view-computing">
+    <div class="module-header">
+      <div class="m-tag">09 · Applications</div>
+      <h2>Qubits &amp; Quantum Gates</h2>
+      <div class="m-sub">Apply real quantum gates and watch the qubit's state rotate on the Bloch sphere.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="compWrap"></div>
+      <div class="viz-controls">
+        <button class="ctrl-btn" id="compResetBtn">Reset to |0⟩</button>
+        <button class="ctrl-btn primary" data-gate="X">Apply X Gate</button>
+        <button class="ctrl-btn primary" data-gate="Z">Apply Z Gate</button>
+        <button class="ctrl-btn primary" data-gate="H">Apply H Gate</button>
+        <button class="ctrl-btn" id="compMeasureBtn">Measure</button>
+      </div>
+      <div class="viz-readout" id="compReadout">State: |0⟩ — a classical bit would just be "0". A qubit can do so much more.</div>
+    </div>
+    <div id="computing-panels"></div>
+    <button class="next-module-btn" data-current="computing">Next: Quantum Algorithms &amp; Real-World Uses →</button>
+  </div>
+
+  <!-- MODULE: ALGORITHMS -->
+  <div class="view" id="view-algorithms">
+    <div class="module-header">
+      <div class="m-tag">10 · Applications</div>
+      <h2>Quantum Algorithms &amp; Real-World Uses</h2>
+      <div class="m-sub">Drag the list size slider and compare how many steps a classical vs. quantum search would need.</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-canvas-wrap" id="algo-wrap" style="height:220px;"><canvas id="algoCanvas"></canvas></div>
+      <div class="viz-controls" style="flex-direction: column; align-items: center; gap: 6px;">
+        <input type="range" id="algoSlider" min="10" max="1000" value="200" style="width: 280px;">
+        <div style="font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;">DATABASE SIZE (N ITEMS)</div>
+      </div>
+      <div class="viz-readout" id="algoReadout"></div>
+    </div>
+    <div id="algorithms-panels"></div>
+    <button class="next-module-btn" data-current="algorithms">🎉 You've completed all 10 modules — Back to Home</button>
+  </div>
+
+  <footer>quantum, explained — visuals + AI tutor by you, physics by the universe</footer>
+</div>
+
+
+<script>
+/* =========================================================
+   SHARED: view routing, AI helper, reusable panel builder
+   ========================================================= */
+const MODEL = "claude-sonnet-4-6";
+
+let currentView = 'home';
+
+const BACK_TARGET = {
+  roadmap: 'home',
+  why: 'home',
+  modules: 'roadmap',
+  'domain-computing': 'roadmap',
+  'domain-security': 'roadmap',
+  'domain-sensing': 'roadmap',
+  'domain-theory': 'roadmap',
+  superposition: 'modules', duality: 'modules', entanglement: 'modules', uncertainty: 'modules',
+  tunneling: 'modules', spin: 'modules', cat: 'modules', cloning: 'modules',
+  computing: 'modules', algorithms: 'modules',
+  cryptography: 'domain-security',
+  superdense: 'domain-computing',
+  classicalvsquantum: 'domain-computing',
+  teleportation: 'domain-security'
+};
+const STUB_DOMAIN = {
+  qinfo: 'domain-computing', teleportation: 'domain-security',
+  metrology: 'domain-sensing', sensing: 'domain-sensing', imaging: 'domain-sensing',
+  qft: 'domain-theory', gravity: 'domain-theory'
+};
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('homeBtn').classList.toggle('show', name !== 'home');
+  currentView = name;
+  document.getElementById('backArrowBtn').classList.toggle('show', name !== 'home');
+  if (name === 'roadmap') updateDomainStatuses();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.getElementById('backArrowBtn').addEventListener('click', () => {
+  if (currentView === 'stub') {
+    showView(STUB_DOMAIN[currentStub] || 'roadmap');
+  } else {
+    showView(BACK_TARGET[currentView] || 'home');
+  }
+});
+document.getElementById('homeBtn').addEventListener('click', () => showView('roadmap'));
+document.getElementById('logoBtn').addEventListener('click', () => showView('home'));
+document.getElementById('whyBtn').addEventListener('click', () => showView('why'));
+
+function goToModule(name) {
+  showView(name);
+  initModuleIfNeeded(name);
+  markVisited(name);
+}
+document.getElementById('startHereBtn').addEventListener('click', () => showView('roadmap'));
+document.getElementById('whyStartBtn').addEventListener('click', () => showView('roadmap'));
+
+document.getElementById('domainFoundations').addEventListener('click', () => showView('modules'));
+document.querySelectorAll('.domain-grid .domain-card').forEach(card => {
+  card.addEventListener('click', () => showView('domain-' + card.dataset.domain));
+});
+document.querySelectorAll('.module-card').forEach(card => {
+  card.addEventListener('click', () => goToModule(card.dataset.module));
+});
+document.querySelectorAll('.topic-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if (card.dataset.gotoModule) goToModule(card.dataset.gotoModule);
+    else if (card.dataset.gotoStub) openStub(card.dataset.gotoStub);
+  });
+});
+document.getElementById('bb84BackBtn').addEventListener('click', () => showView('domain-security'));
+document.getElementById('sdBackBtn').addEventListener('click', () => showView('domain-computing'));
+document.getElementById('tpBackBtn').addEventListener('click', () => showView('domain-security'));
+
+/* ---- Progress tracking (persisted via artifact storage) ---- */
+const ALL_MODULES = ['superposition','duality','entanglement','uncertainty','tunneling','spin','cat','cloning','computing','algorithms'];
+let visited = new Set();
+
+async function loadProgress() {
+  try {
+    const res = await window.storage.get('progress', false);
+    if (res && res.value) {
+      const data = JSON.parse(res.value);
+      (data.visited || []).forEach(m => visited.add(m));
+    }
+  } catch (e) { /* no saved progress yet, that's fine */ }
+  updateProgressUI();
+}
+
+async function saveProgress() {
+  try { await window.storage.set('progress', JSON.stringify({ visited: Array.from(visited) }), false); }
+  catch (e) { /* storage unavailable, progress just won't persist */ }
+}
+
+function updateProgressUI() {
+  const total = ALL_MODULES.length;
+  const count = ALL_MODULES.filter(m => visited.has(m)).length;
+  const fill = document.getElementById('homeProgressFill');
+  const text = document.getElementById('homeProgressText');
+  if (fill) fill.style.width = (count / total * 100) + '%';
+  if (text) text.textContent = `${count} / ${total} modules explored`;
+  ALL_MODULES.forEach(m => {
+    const el = document.getElementById('check-' + m);
+    if (el) el.classList.toggle('show', visited.has(m));
+  });
+  const dfp = document.getElementById('domainFoundationsProgress');
+  if (dfp) dfp.textContent = `${count} / ${total} complete`;
+  updateDomainStatuses();
+}
+
+function markVisited(name) {
+  if (!visited.has(name)) {
+    visited.add(name);
+    updateProgressUI();
+    saveProgress();
+  }
+}
+
+function updateDomainStatuses() {
+  const domainTopics = {
+    computing: { built: 4, total: 4 },
+    security: { built: 2, total: 2 },
+    sensing: { built: 0, total: 3 },
+    theory: { built: 0, total: 2 }
+  };
+  Object.entries(domainTopics).forEach(([key, val]) => {
+    const el = document.getElementById('status-' + key);
+    if (!el) return;
+    if (val.built === 0) {
+      el.textContent = '🔜 Coming Soon';
+      el.style.background = '#ffc85714'; el.style.color = '#ffc857'; el.style.border = '1px solid #ffc85733';
+    } else if (val.built === val.total) {
+      el.textContent = '✅ Fully Built';
+      el.style.background = '#33e5a114'; el.style.color = '#33e5a1'; el.style.border = '1px solid #33e5a133';
+    } else {
+      el.textContent = `🚧 ${val.built}/${val.total} Built`;
+      el.style.background = '#33e5ff14'; el.style.color = '#33e5ff'; el.style.border = '1px solid #33e5ff33';
+    }
+  });
+}
+
+loadProgress();
+
+/* ---- Next Module buttons (Foundations domain sequence) ---- */
+const NEXT_MODULE = {
+  superposition: 'duality',
+  duality: 'entanglement',
+  entanglement: 'uncertainty',
+  uncertainty: 'tunneling',
+  tunneling: 'spin',
+  spin: 'cat',
+  cat: 'cloning',
+  cloning: 'computing',
+  computing: 'algorithms',
+  algorithms: null
+};
+document.querySelectorAll('.next-module-btn[data-current]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const next = NEXT_MODULE[btn.dataset.current];
+    if (next) goToModule(next);
+    else showView('home');
+  });
+});
+
+/* =========================================================
+   STUB TOPIC PAGES (roadmap items not yet fully built)
+   ========================================================= */
+const STUB_DATA = {
+  qinfo: {
+    tag: '🗺️ Roadmap → Computing & Information Science',
+    title: 'Quantum Information Theory',
+    sub: 'How information itself behaves differently once it\'s carried by quantum systems.',
+    description: 'Quantum information theory studies how information can be encoded, measured, and transmitted using qubits rather than classical bits. It underlies everything from quantum computing to quantum cryptography, and asks foundational questions like: how much information can a qubit really hold, and how does entanglement change what "information" even means?',
+    resources: [
+      { icon: '📘', label: 'Quantum Information — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_information', type: 'Article' },
+      { icon: '🎓', label: 'IBM Quantum Learning platform', url: 'https://learning.quantum.ibm.com/', type: 'Course' }
+    ]
+  },
+  teleportation: {
+    tag: '🗺️ Roadmap → Communication & Security',
+    title: 'Quantum Teleportation',
+    sub: 'Transferring a quantum state across distance using entanglement — no matter actually moves.',
+    description: 'Quantum teleportation uses a pre-shared entangled pair plus a classical communication channel to transfer an unknown quantum state from one location to another, destroying the original in the process. It doesn\'t move matter or energy faster than light -- it still needs classical communication -- but it\'s a cornerstone protocol for future quantum networks.',
+    resources: [
+      { icon: '📘', label: 'Quantum Teleportation — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_teleportation', type: 'Article' },
+      { icon: '🎓', label: 'IBM Quantum Learning platform', url: 'https://learning.quantum.ibm.com/', type: 'Course' }
+    ]
+  },
+  metrology: {
+    tag: '🗺️ Roadmap → Sensing, Metrology & Imaging',
+    title: 'Quantum Metrology',
+    sub: 'Using entanglement to measure quantities more precisely than classical physics allows.',
+    description: 'Quantum metrology uses quantum effects like entanglement and squeezed states to measure quantities -- time, distance, field strength -- with precision beyond the classical "shot noise" limit. It\'s already used in the world\'s most precise atomic clocks and gravitational wave detectors like LIGO.',
+    resources: [
+      { icon: '📘', label: 'Quantum Metrology — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_metrology', type: 'Article' }
+    ]
+  },
+  sensing: {
+    tag: '🗺️ Roadmap → Sensing, Metrology & Imaging',
+    title: 'Quantum Sensing',
+    sub: 'Ultra-sensitive detectors built on quantum effects.',
+    description: 'Quantum sensors exploit the extreme sensitivity of quantum states to their environment to detect tiny changes in magnetic fields, gravity, temperature, or time. They\'re already used in medical imaging (like MEG brain scanners) and navigation systems that don\'t rely on GPS.',
+    resources: [
+      { icon: '📘', label: 'Quantum Sensor — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_sensor', type: 'Article' }
+    ]
+  },
+  imaging: {
+    tag: '🗺️ Roadmap → Sensing, Metrology & Imaging',
+    title: 'Quantum Imaging',
+    sub: 'Forming images using entangled photons -- sometimes without light ever touching the object.',
+    description: 'Quantum imaging techniques use correlated or entangled photons to create images with better resolution, lower light exposure, or in one famous case ("ghost imaging"), by never actually shining light directly on the object being imaged. It has promising applications in low-light medical imaging and secure image transmission.',
+    resources: [
+      { icon: '📘', label: 'Quantum Imaging — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_imaging', type: 'Article' }
+    ]
+  },
+  qft: {
+    tag: '🗺️ Roadmap → Advanced Theory',
+    title: 'Quantum Field Theory',
+    sub: 'The framework where particles are ripples in underlying fields.',
+    description: 'Quantum field theory (QFT) combines quantum mechanics with special relativity, describing particles not as tiny balls but as excitations -- ripples -- in fields that fill all of space. It\'s the mathematical foundation of the Standard Model of particle physics and explains phenomena like particle creation and annihilation.',
+    resources: [
+      { icon: '📘', label: 'Quantum Field Theory — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_field_theory', type: 'Article' }
+    ]
+  },
+  gravity: {
+    tag: '🗺️ Roadmap → Advanced Theory',
+    title: 'Quantum Gravity',
+    sub: 'The unsolved puzzle of unifying quantum mechanics with general relativity.',
+    description: 'Quantum gravity is the ongoing search for a theory that describes gravity using quantum principles, unifying it with the other fundamental forces. It remains one of the biggest open problems in physics, with leading candidate approaches including string theory and loop quantum gravity -- neither of which has been experimentally confirmed yet.',
+    resources: [
+      { icon: '📘', label: 'Quantum Gravity — Wikipedia overview', url: 'https://en.wikipedia.org/wiki/Quantum_gravity', type: 'Article' }
+    ]
+  }
+};
+
+let currentStub = null;
+let stubChatHistory = [];
+
+function openStub(key) {
+  const data = STUB_DATA[key];
+  if (!data) return;
+  currentStub = key;
+  stubChatHistory = [];
+  document.getElementById('stubTag').textContent = data.tag;
+  document.getElementById('stubTitle').textContent = data.title;
+  document.getElementById('stubSub').textContent = data.sub;
+  document.getElementById('stubDescription').textContent = data.description;
+  const resWrap = document.getElementById('stubResources');
+  resWrap.innerHTML = '';
+  data.resources.forEach(r => {
+    const a = document.createElement('a');
+    a.className = 'resource-card';
+    a.href = r.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.innerHTML = `<span class="resource-icon">${r.icon}</span><div class="resource-info"><b>${r.label}</b><span>${r.type}</span></div>`;
+    resWrap.appendChild(a);
+  });
+  const chatLog = document.getElementById('stub-chatLog');
+  chatLog.innerHTML = `<div class="chat-empty">The full interactive module isn't built yet, but the tutor can still answer questions about ${data.title.toLowerCase()}.</div>`;
+  document.getElementById('stub-chatError').style.display = 'none';
+  showView('stub');
+}
+
+document.getElementById('stub-chatSend').addEventListener('click', sendStubChat);
+document.getElementById('stub-chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendStubChat(); });
+
+async function sendStubChat() {
+  const input = document.getElementById('stub-chatInput');
+  const q = input.value.trim();
+  if (!q || !currentStub) return;
+  const data = STUB_DATA[currentStub];
+  const chatLog = document.getElementById('stub-chatLog');
+  const errEl = document.getElementById('stub-chatError');
+  errEl.style.display = 'none';
+  if (chatLog.querySelector('.chat-empty')) chatLog.innerHTML = '';
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.textContent = q;
+  chatLog.appendChild(userDiv);
+  input.value = '';
+  document.getElementById('stub-chatSend').disabled = true;
+  try {
+    const system = `You are Q, a friendly quantum physics tutor. The student is asking about "${data.title}" (${data.description}). This topic doesn't have a full interactive module built yet, so answer from your own knowledge, warmly and clearly, in 2-4 sentences, for a beginner-to-intermediate audience. Plain text only, no markdown. Never mention being an AI.`;
+    const answer = await callClaudeText(system, q, stubChatHistory);
+    stubChatHistory.push({ role: "user", content: q });
+    stubChatHistory.push({ role: "assistant", content: answer });
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'chat-msg ai';
+    aiDiv.textContent = answer;
+    chatLog.appendChild(aiDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  } catch (err) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'The tutor is stumped: ' + err.message;
+  } finally {
+    document.getElementById('stub-chatSend').disabled = false;
+  }
+}
+
+
+async function callClaudeText(system, userMessage, history) {
+  const messages = [...(history || []), { role: "user", content: userMessage }];
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: MODEL, max_tokens: 500, system: system, messages: messages })
+  });
+  const data = await response.json();
+  const block = (data.content || []).find(b => b.type === "text");
+  if (!block) throw new Error("No response received.");
+  return block.text.trim();
+}
+
+async function callClaudeJSON(system, userMessage) {
+  const raw = await callClaudeText(system, userMessage, []);
+  const clean = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
+  return JSON.parse(clean);
+}
+
+const LEVELS = [
+  { id: 'beginner', label: 'Beginner', desc: 'no physics background, use everyday analogies, avoid jargon and equations entirely' },
+  { id: 'intermediate', label: 'Intermediate', desc: 'some science background (e.g. high school physics), can introduce proper terms like "wavefunction" or "qubit" with brief definitions' },
+  { id: 'math', label: 'The Math', desc: 'comfortable with basic math/notation, include simple relevant equations or Dirac notation where useful, still keep it concise' }
+];
+
+/* Builds the shared "Explain / Ask the Tutor / Quiz" panel set for a module.
+   conceptName: human readable concept name for prompts
+   containerId: where to inject panels
+   returns: {} (side-effecting, wires up its own listeners) */
+function buildLearningPanels(containerId, conceptKey, conceptName, conceptDescription) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">📘 Explain It</div>
+        <div class="level-tabs" id="${conceptKey}-levelTabs">
+          ${LEVELS.map((l, i) => `<button class="level-tab${i===0?' active':''}" data-level="${l.id}">${l.label}</button>`).join('')}
+        </div>
+      </div>
+      <div class="explain-text" id="${conceptKey}-explainText"><span class="explain-loading"><span class="p">●</span> loading explanation…</span></div>
+      <div class="error-box" id="${conceptKey}-explainError"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">💬 Ask the Quantum Tutor</div></div>
+      <div class="chat-log" id="${conceptKey}-chatLog"><div class="chat-empty">Ask anything about ${conceptName.toLowerCase()} — no question is too basic.</div></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="${conceptKey}-chatInput" placeholder="e.g. why does looking at it change anything?">
+        <button class="chat-send" id="${conceptKey}-chatSend">Ask</button>
+      </div>
+      <div class="error-box" id="${conceptKey}-chatError"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">🧠 Quick Check</div>
+        <button class="ctrl-btn" id="${conceptKey}-quizBtn">Generate Quiz</button>
+      </div>
+      <div id="${conceptKey}-quizArea" class="chat-empty">Test what you just learned with 3 quick questions.</div>
+      <div class="error-box" id="${conceptKey}-quizError"></div>
+    </div>
+  `;
+
+  const state = { level: 'beginner', explainCache: {}, chatHistory: [] };
+
+  function currentLevelObj() { return LEVELS.find(l => l.id === state.level); }
+
+  async function loadExplanation() {
+    const textEl = document.getElementById(`${conceptKey}-explainText`);
+    const errEl = document.getElementById(`${conceptKey}-explainError`);
+    errEl.style.display = 'none';
+    if (state.explainCache[state.level]) {
+      textEl.textContent = state.explainCache[state.level];
+      return;
+    }
+    textEl.innerHTML = '<span class="explain-loading"><span class="p">●</span> loading explanation…</span>';
+    try {
+      const lvl = currentLevelObj();
+      const system = `You are Q, a friendly, precise quantum physics tutor. Explain concepts through vivid analogies without oversimplifying to the point of being wrong. Never mention that you are an AI.`;
+      const userMsg = `Explain "${conceptName}" (${conceptDescription}) for a student at this level: ${lvl.desc}. Write 90-150 words, one clear paragraph, plain text only, no markdown, no headers, no bullet points.`;
+      const text = await callClaudeText(system, userMsg, []);
+      state.explainCache[state.level] = text;
+      textEl.textContent = text;
+    } catch (err) {
+      textEl.textContent = '';
+      errEl.style.display = 'block';
+      errEl.textContent = 'Could not load explanation: ' + err.message;
+    }
+  }
+
+  document.querySelectorAll(`#${conceptKey}-levelTabs .level-tab`).forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll(`#${conceptKey}-levelTabs .level-tab`).forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.level = tab.dataset.level;
+      loadExplanation();
+    });
+  });
+
+  // Chat
+  const chatLog = document.getElementById(`${conceptKey}-chatLog`);
+  const chatInput = document.getElementById(`${conceptKey}-chatInput`);
+  const chatSend = document.getElementById(`${conceptKey}-chatSend`);
+  const chatErr = document.getElementById(`${conceptKey}-chatError`);
+
+  function appendChat(role, text) {
+    if (chatLog.querySelector('.chat-empty')) chatLog.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'ai');
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendChat() {
+    const q = chatInput.value.trim();
+    if (!q) return;
+    chatErr.style.display = 'none';
+    appendChat('user', q);
+    chatInput.value = '';
+    chatSend.disabled = true;
+    try {
+      const lvl = currentLevelObj();
+      const system = `You are Q, a friendly quantum physics tutor. The student is currently learning about "${conceptName}" (${conceptDescription}) at this level: ${lvl.desc}. Answer their question warmly and clearly in 2-4 sentences using analogies suited to their level. Plain text only, no markdown. Never mention being an AI.`;
+      const answer = await callClaudeText(system, q, state.chatHistory);
+      state.chatHistory.push({ role: "user", content: q });
+      state.chatHistory.push({ role: "assistant", content: answer });
+      appendChat('ai', answer);
+    } catch (err) {
+      chatErr.style.display = 'block';
+      chatErr.textContent = 'The tutor is stumped: ' + err.message;
+    } finally {
+      chatSend.disabled = false;
+    }
+  }
+  chatSend.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+  // Quiz
+  const quizBtn = document.getElementById(`${conceptKey}-quizBtn`);
+  const quizArea = document.getElementById(`${conceptKey}-quizArea`);
+  const quizErr = document.getElementById(`${conceptKey}-quizError`);
+
+  quizBtn.addEventListener('click', async () => {
+    quizErr.style.display = 'none';
+    quizArea.innerHTML = '<span class="explain-loading"><span class="p">●</span> writing quiz questions…</span>';
+    quizBtn.disabled = true;
+    try {
+      const lvl = currentLevelObj();
+      const system = `You write short quizzes for a quantum physics learning app. Respond with STRICT JSON only, no markdown fences, no preamble, in exactly this shape: {"questions":[{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"one short sentence why"}, ...]} Generate exactly 3 multiple choice questions.`;
+      const userMsg = `Write 3 quiz questions about "${conceptName}" (${conceptDescription}) suited for someone learning at this level: ${lvl.desc}. Keep each question and option short.`;
+      const result = await callClaudeJSON(system, userMsg);
+      renderQuiz(result.questions || []);
+    } catch (err) {
+      quizArea.innerHTML = '';
+      quizErr.style.display = 'block';
+      quizErr.textContent = 'Could not build quiz: ' + err.message;
+    } finally {
+      quizBtn.disabled = false;
+    }
+  });
+
+  function renderQuiz(questions) {
+    quizArea.innerHTML = '';
+    let scoreCount = 0;
+    let answered = 0;
+    questions.forEach((q, qi) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'quiz-q';
+      const qText = document.createElement('div');
+      qText.className = 'qq-text';
+      qText.textContent = `${qi + 1}. ${q.question}`;
+      qDiv.appendChild(qText);
+      const explainDiv = document.createElement('div');
+      explainDiv.className = 'quiz-explain';
+      explainDiv.textContent = q.explanation || '';
+      q.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-opt';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          const opts = qDiv.querySelectorAll('.quiz-opt');
+          opts.forEach(o => o.classList.add('disabled'));
+          if (oi === q.correctIndex) {
+            btn.classList.add('correct');
+            scoreCount++;
+          } else {
+            btn.classList.add('incorrect');
+            opts[q.correctIndex].classList.add('correct');
+          }
+          explainDiv.classList.add('show');
+          answered++;
+          updateScoreLine();
+        });
+        qDiv.appendChild(btn);
+      });
+      qDiv.appendChild(explainDiv);
+      quizArea.appendChild(qDiv);
+    });
+    const scoreLine = document.createElement('div');
+    scoreLine.className = 'quiz-score';
+    quizArea.appendChild(scoreLine);
+    function updateScoreLine() {
+      if (answered === questions.length) {
+        scoreLine.textContent = `Score: ${scoreCount} / ${questions.length}`;
+      } else {
+        scoreLine.textContent = '';
+      }
+    }
+  }
+
+  loadExplanation();
+}
+
+const moduleInitDone = {};
+function initModuleIfNeeded(name) {
+  if (moduleInitDone[name]) return;
+  moduleInitDone[name] = true;
+  if (name === 'superposition') initSuperposition();
+  if (name === 'duality') initDuality();
+  if (name === 'entanglement') initEntanglement();
+  if (name === 'uncertainty') initUncertainty();
+  if (name === 'tunneling') initTunneling();
+  if (name === 'spin') initSpin();
+  if (name === 'cat') initCat();
+  if (name === 'cloning') initCloning();
+  if (name === 'computing') initComputing();
+  if (name === 'algorithms') initAlgorithms();
+  if (name === 'cryptography') initCryptography();
+  if (name === 'superdense') initSuperdense();
+  if (name === 'classicalvsquantum') initClassicalVsQuantum();
+  if (name === 'teleportation') initTeleportation();
+}
+
+/* =========================================================
+   MODULE 1: SUPERPOSITION — Bloch sphere (three.js)
+   ========================================================= */
+function initSuperposition() {
+  buildLearningPanels('superposition-panels', 'sp', 'Quantum Superposition & Measurement',
+    'the idea that a qubit can exist in a combination of the |0⟩ and |1⟩ states at once, described by the Bloch sphere, until it is measured and collapses to one definite outcome');
+
+  const wrap = document.getElementById('blochWrap');
+  const width = wrap.clientWidth || 600, height = 320;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+  camera.position.set(0, 1.6, 4.2);
+  camera.lookAt(0, 0, 0);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  wrap.appendChild(renderer.domElement);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  // Wireframe sphere
+  const sphereGeo = new THREE.SphereGeometry(1.3, 24, 18);
+  const sphereMat = new THREE.MeshBasicMaterial({ color: 0x33e5ff, wireframe: true, transparent: true, opacity: 0.25 });
+  group.add(new THREE.Mesh(sphereGeo, sphereMat));
+
+  // Axes
+  function makeAxisLine(dir, color) {
+    const geo = new THREE.BufferGeometry().setFromPoints([dir.clone().multiplyScalar(-1.5), dir.clone().multiplyScalar(1.5)]);
+    const mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.35 });
+    return new THREE.Line(geo, mat);
+  }
+  group.add(makeAxisLine(new THREE.Vector3(1,0,0), 0x9b6dff));
+  group.add(makeAxisLine(new THREE.Vector3(0,1,0), 0xffc857));
+  group.add(makeAxisLine(new THREE.Vector3(0,0,1), 0xff5fa8));
+
+  function makeLabel(text, pos, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.font = '600 34px Sora, sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(text, 64, 42);
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.55, 0.28, 1);
+    sprite.position.copy(pos);
+    return sprite;
+  }
+  group.add(makeLabel('|0⟩', new THREE.Vector3(0, 1.65, 0), '#ffc857'));
+  group.add(makeLabel('|1⟩', new THREE.Vector3(0, -1.65, 0), '#ffc857'));
+  group.add(makeLabel('|+⟩', new THREE.Vector3(1.7, 0, 0), '#9b6dff'));
+
+  // State arrow
+  let currentDir = new THREE.Vector3(0, 1, 0);
+  let targetDir = new THREE.Vector3(0, 1, 0);
+  const arrowHelper = new THREE.ArrowHelper(currentDir, new THREE.Vector3(0,0,0), 1.3, 0x33e5ff, 0.25, 0.15);
+  group.add(arrowHelper);
+
+  // Lighting not needed for basic materials, add ambient sprite glow via point
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+  // manual drag rotation
+  let isDragging = false, prevX = 0, prevY = 0;
+  renderer.domElement.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevX, dy = e.clientY - prevY;
+    group.rotation.y += dx * 0.008;
+    group.rotation.x += dy * 0.008;
+    prevX = e.clientX; prevY = e.clientY;
+  });
+  renderer.domElement.addEventListener('touchstart', e => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; }, {passive:true});
+  renderer.domElement.addEventListener('touchend', () => isDragging = false);
+  renderer.domElement.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - prevX, dy = e.touches[0].clientY - prevY;
+    group.rotation.y += dx * 0.008;
+    group.rotation.x += dy * 0.008;
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+  }, {passive:true});
+
+  function animate() {
+    requestAnimationFrame(animate);
+    currentDir.lerp(targetDir, 0.08);
+    if (currentDir.length() > 0.001) {
+      arrowHelper.setDirection(currentDir.clone().normalize());
+    }
+    if (!isDragging) group.rotation.y += 0.0015;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  const readout = document.getElementById('blochReadout');
+  document.querySelectorAll('[data-bloch]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.bloch;
+      if (v === '0') { targetDir = new THREE.Vector3(0,1,0); readout.innerHTML = 'The arrow points to |0⟩ — a definite state.'; }
+      if (v === '1') { targetDir = new THREE.Vector3(0,-1,0); readout.innerHTML = 'The arrow points to |1⟩ — a definite state.'; }
+      if (v === 'plus') { targetDir = new THREE.Vector3(1,0,0); readout.innerHTML = 'Now on the equator: <span class="hl">50% chance of 0, 50% chance of 1</span> if measured right now.'; }
+    });
+  });
+
+  document.getElementById('measureBtn').addEventListener('click', () => {
+    // probability of collapsing to |0> depends on how close current dir is to the |0> pole
+    const dot = currentDir.clone().normalize().dot(new THREE.Vector3(0,1,0)); // -1..1
+    const probZero = (dot + 1) / 2; // convert to 0..1 probability
+    const result = Math.random() < probZero ? 0 : 1;
+    targetDir = result === 0 ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,-1,0);
+    readout.innerHTML = `Measured: <span class="hl">|${result}⟩</span> — the superposition just collapsed to one definite outcome.`;
+  });
+}
+
+/* =========================================================
+   MODULE 2: WAVE-PARTICLE DUALITY — double slit (canvas 2D)
+   ========================================================= */
+function initDuality() {
+  buildLearningPanels('duality-panels', 'du', 'Wave–Particle Duality',
+    'the double-slit experiment, in which particles fired one at a time build up an interference pattern characteristic of waves, unless you measure which slit they went through, which destroys the interference and produces a particle-like pattern instead');
+
+  const wrap = document.getElementById('duality-wrap');
+  const canvas = document.getElementById('dualityCanvas');
+  const ctx = canvas.getContext('2d');
+  let W = wrap.clientWidth, H = 320;
+  canvas.width = W; canvas.height = H;
+
+  let detectorOn = false;
+  const screenX = W - 60;
+  const slitX = 90;
+  const slitY1 = H/2 - 34, slitY2 = H/2 + 34;
+  let hits = []; // {y}
+  let particles = []; // in-flight {x,y,vy,targetY}
+
+  function sampleInterferenceY() {
+    // rejection sampling from interference envelope
+    const sigma = H * 0.16;
+    const freq = 0.09;
+    for (let tries = 0; tries < 40; tries++) {
+      const y = (Math.random() - 0.5) * H * 1.3 + H/2;
+      const rel = y - H/2;
+      const envelope = Math.exp(-(rel*rel)/(2*sigma*sigma*4));
+      const fringe = Math.pow(Math.cos(freq * rel), 2);
+      const p = envelope * fringe;
+      if (Math.random() < p) return y;
+    }
+    return H/2;
+  }
+
+  function sampleParticleY() {
+    // two gaussian clusters, one per slit
+    const sigma = 22;
+    const center = Math.random() < 0.5 ? slitY1 : slitY2;
+    let y;
+    do { y = center + (Math.random()-0.5+Math.random()-0.5) * sigma * 2; } while (y < 0 || y > H);
+    return y;
+  }
+
+  function spawnParticle() {
+    const targetY = detectorOn ? sampleParticleY() : sampleInterferenceY();
+    particles.push({ x: 20, y: H/2, targetY: targetY, speed: 3.2 + Math.random()*1.2 });
+  }
+
+  let spawnTimer = 0;
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    // draw barrier with slits
+    ctx.fillStyle = '#1c2038';
+    ctx.fillRect(slitX - 4, 0, 8, slitY1 - 14);
+    ctx.fillRect(slitX - 4, slitY1 + 14, 8, slitY2 - slitY1 - 28);
+    ctx.fillRect(slitX - 4, slitY2 + 14, 8, H - (slitY2+14));
+
+    // screen
+    ctx.strokeStyle = '#2a2e4a';
+    ctx.beginPath(); ctx.moveTo(screenX, 0); ctx.lineTo(screenX, H); ctx.stroke();
+
+    // accumulated hits as glowing dots on screen column, spread slightly for visibility
+    ctx.save();
+    hits.forEach(h => {
+      ctx.beginPath();
+      const grad = ctx.createRadialGradient(screenX, h, 0, screenX, h, 6);
+      grad.addColorStop(0, 'rgba(51,229,255,0.9)');
+      grad.addColorStop(1, 'rgba(51,229,255,0)');
+      ctx.fillStyle = grad;
+      ctx.arc(screenX, h, 6, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // moving particles
+    particles.forEach(p => {
+      p.x += p.speed;
+      const progress = Math.min(1, (p.x - slitX) / (screenX - slitX));
+      if (p.x > slitX) {
+        p.y = H/2 + (p.targetY - H/2) * Math.max(0, progress);
+      }
+      ctx.beginPath();
+      ctx.fillStyle = '#ffc857';
+      ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+      ctx.fill();
+    });
+    particles = particles.filter(p => {
+      if (p.x >= screenX) { hits.push(p.targetY); return false; }
+      return true;
+    });
+    if (hits.length > 2000) hits.splice(0, hits.length - 2000);
+
+    spawnTimer++;
+    if (spawnTimer > 6) { spawnTimer = 0; spawnParticle(); }
+  }
+  loop();
+
+  document.getElementById('dualityToggle').addEventListener('click', function() {
+    detectorOn = !detectorOn;
+    this.textContent = detectorOn ? 'Turn OFF Which-Path Detector' : 'Turn ON Which-Path Detector';
+    hits = [];
+    const readout = document.getElementById('dualityReadout');
+    readout.innerHTML = detectorOn
+      ? 'Detector ON — measuring which slit destroys the wave behavior, producing two <span class="hl">particle-like clusters</span> instead.'
+      : 'Detector OFF — particles build an <span class="hl">interference pattern</span>, like a wave passing through both slits at once.';
+  });
+  document.getElementById('dualityReset').addEventListener('click', () => { hits = []; });
+}
+
+/* =========================================================
+   MODULE 3: ENTANGLEMENT — linked orbs (canvas 2D, lightweight)
+   ========================================================= */
+function initEntanglement() {
+  buildLearningPanels('entanglement-panels', 'en', 'Quantum Entanglement',
+    'two particles prepared together so that measuring one instantly determines the correlated outcome of the other, no matter the distance between them, without allowing faster-than-light communication');
+
+  const wrap = document.getElementById('entWrap');
+  const canvas = document.createElement('canvas');
+  const W = wrap.clientWidth || 600, H = 260;
+  canvas.width = W; canvas.height = H;
+  wrap.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  let measured = false;
+  let leftState = null, rightState = null; // 'A' or 'B'
+  let photons = []; // traveling dots between the two, for visual "link"
+  for (let i = 0; i < 6; i++) photons.push({ t: i / 6 });
+
+  const leftX = W * 0.28, rightX = W * 0.72, cy = H/2;
+
+  function colorFor(state) {
+    if (state === null) return '#9b6dff';
+    return state === 'A' ? '#33e5ff' : '#ff5fa8';
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    // link line
+    ctx.strokeStyle = measured ? 'rgba(155,109,255,0.15)' : 'rgba(155,109,255,0.4)';
+    ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(leftX, cy); ctx.lineTo(rightX, cy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (!measured) {
+      photons.forEach(p => {
+        p.t += 0.006;
+        if (p.t > 1) p.t -= 1;
+        const x = leftX + (rightX - leftX) * p.t;
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(155,109,255,0.7)';
+        ctx.arc(x, cy, 2.4, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+
+    // orbs
+    [ [leftX, leftState], [rightX, rightState] ].forEach(([x, state]) => {
+      const c = colorFor(state);
+      const grad = ctx.createRadialGradient(x, cy, 0, x, cy, 46);
+      grad.addColorStop(0, c + 'aa');
+      grad.addColorStop(1, c + '00');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(x, cy, 46, 0, Math.PI*2); ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillStyle = c;
+      ctx.arc(x, cy, 16, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    ctx.font = '600 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#8b90ad';
+    ctx.textAlign = 'center';
+    ctx.fillText('Particle A', leftX, cy + 70);
+    ctx.fillText('Particle B', rightX, cy + 70);
+  }
+  loop();
+
+  const readout = document.getElementById('entReadout');
+  document.getElementById('measureLeftBtn').addEventListener('click', function() {
+    if (measured) return;
+    measured = true;
+    leftState = Math.random() < 0.5 ? 'A' : 'B';
+    rightState = leftState === 'A' ? 'B' : 'A'; // correlated: opposite outcome
+    this.disabled = true;
+    readout.innerHTML = `You measured Particle A as <span class="hl">${leftState}</span> — instantly, Particle B is now determined to be <span class="hl">${rightState}</span>, even though nothing was sent between them.`;
+  });
+  document.getElementById('entResetBtn').addEventListener('click', () => {
+    measured = false; leftState = null; rightState = null;
+    document.getElementById('measureLeftBtn').disabled = false;
+    readout.textContent = 'Both particles are unmeasured — entangled, correlated, undetermined.';
+  });
+}
+
+/* =========================================================
+   MODULE 4: HEISENBERG UNCERTAINTY — dual Gaussian canvas
+   ========================================================= */
+function initUncertainty() {
+  buildLearningPanels('uncertainty-panels', 'un', 'Heisenberg Uncertainty Principle',
+    'the principle that a particle\'s position and momentum cannot both be known with arbitrary precision at the same time — the more precisely one is known, the less precisely the other can be known, a trade-off rather than a limitation of measurement tools');
+
+  const wrap = document.getElementById('unc-wrap');
+  const canvas = document.getElementById('uncCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 320;
+  canvas.width = W; canvas.height = H;
+
+  const slider = document.getElementById('uncSlider');
+  const readout = document.getElementById('uncReadout');
+
+  function gaussian(x, mu, sigma) {
+    return Math.exp(-((x-mu)*(x-mu)) / (2*sigma*sigma));
+  }
+
+  function draw() {
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    const t = slider.value / 100; // 0 = certain position, 1 = certain momentum
+    const sigmaX = 14 + t * 110;        // position spread grows as t -> 1
+    const sigmaP = 14 + (1 - t) * 110;  // momentum spread grows as t -> 0
+
+    const halfH = H / 2;
+    const padding = 24;
+    const plotW = (W - padding * 3) / 2;
+
+    // Left plot: position space
+    drawCurve(padding, 0, plotW, halfH - 10, sigmaX, '#33e5ff', 'POSITION (x)');
+    // Right plot: momentum space
+    drawCurve(padding * 2 + plotW, 0, plotW, halfH - 10, sigmaP, '#ff5fa8', 'MOMENTUM (p)');
+
+    // divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(0, halfH); ctx.lineTo(W, halfH); ctx.stroke();
+
+    // product readout bar (bottom half) — show Δx·Δp roughly constant
+    const productLabelY = halfH + 40;
+    ctx.font = '600 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#8b90ad';
+    ctx.textAlign = 'center';
+    ctx.fillText('Δx · Δp ≳ ħ/2  (the product never gets fully small)', W/2, productLabelY);
+
+    // two bars showing relative uncertainty width
+    const barY = productLabelY + 30;
+    const barMaxW = W - padding*2;
+    drawBar(padding, barY, barMaxW * Math.min(1, sigmaX/140), '#33e5ff', 'Δx');
+    drawBar(padding, barY + 26, barMaxW * Math.min(1, sigmaP/140), '#ff5fa8', 'Δp');
+
+    function drawCurve(x0, y0, w, h, sigma, color, label) {
+      ctx.save();
+      ctx.beginPath();
+      const baseline = y0 + h - 20;
+      const cx = x0 + w/2;
+      ctx.moveTo(x0, baseline);
+      for (let px = 0; px <= w; px += 2) {
+        const worldX = px - w/2;
+        const val = gaussian(worldX, 0, sigma);
+        const py = baseline - val * (h - 40);
+        ctx.lineTo(x0 + px, py);
+      }
+      ctx.lineTo(x0 + w, baseline);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, y0, 0, y0+h);
+      grad.addColorStop(0, color + '55');
+      grad.addColorStop(1, color + '05');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.font = '600 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.fillText(label, cx, y0 + 14);
+    }
+
+    function drawBar(x, y, w, color, label) {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(x, y, barMaxW, 10);
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, 10);
+      ctx.font = '600 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left';
+      ctx.fillText(label, x + barMaxW + 6, y + 9);
+    }
+  }
+
+  slider.addEventListener('input', () => {
+    draw();
+    const t = slider.value / 100;
+    if (t < 0.35) readout.innerHTML = '<span class="hl">Position is well-known</span> — but momentum is now very spread out and unpredictable.';
+    else if (t > 0.65) readout.innerHTML = '<span class="hl">Momentum is well-known</span> — but position is now very spread out and unpredictable.';
+    else readout.textContent = 'Balanced — moderate uncertainty in both position and momentum.';
+  });
+  draw();
+}
+
+/* =========================================================
+   MODULE 5: QUANTUM TUNNELING — particle vs barrier (canvas 2D)
+   ========================================================= */
+function initTunneling() {
+  buildLearningPanels('tunneling-panels', 'tu', 'Quantum Tunneling',
+    'the phenomenon where a particle has some probability of passing through an energy barrier it would classically not have enough energy to cross, because its wavefunction extends into and slightly beyond the barrier');
+
+  const wrap = document.getElementById('tun-wrap');
+  const canvas = document.getElementById('tunCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 320;
+  canvas.width = W; canvas.height = H;
+
+  const slider = document.getElementById('tunSlider');
+  const readout = document.getElementById('tunReadout');
+  const laneY = H / 2;
+  const barrierX = W / 2;
+
+  let attempts = 0, tunneled = 0;
+  let flying = []; // {x, dir, state: 'approaching'|'tunneling'|'reflecting'|'done', color}
+
+  function barrierWidth() { return Number(slider.value); }
+  function tunnelProbability() {
+    const width = barrierWidth();
+    // qualitative exponential decay with width: thinner barrier -> higher chance
+    return Math.max(0.02, Math.min(0.85, Math.exp(-width / 38)));
+  }
+
+  function fire() {
+    const willTunnel = Math.random() < tunnelProbability();
+    flying.push({ x: 30, dir: 1, willTunnel, state: 'approaching', bounced: false });
+    attempts++;
+    if (willTunnel) tunneled++;
+    updateReadout();
+  }
+
+  function updateReadout() {
+    const pct = attempts ? Math.round((tunneled/attempts)*100) : 0;
+    readout.innerHTML = `Attempts: <span class="hl">${attempts}</span> · Tunneled through: <span class="hl">${tunneled}</span> (${pct}%) · barrier chance ≈ ${(tunnelProbability()*100).toFixed(0)}%`;
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    const bw = barrierWidth();
+    const bx0 = barrierX - bw/2, bx1 = barrierX + bw/2;
+
+    // barrier
+    const barrierGrad = ctx.createLinearGradient(bx0, 0, bx1, 0);
+    barrierGrad.addColorStop(0, 'rgba(255,200,87,0.05)');
+    barrierGrad.addColorStop(0.5, 'rgba(255,200,87,0.35)');
+    barrierGrad.addColorStop(1, 'rgba(255,200,87,0.05)');
+    ctx.fillStyle = barrierGrad;
+    ctx.fillRect(bx0, laneY - 70, bw, 140);
+    ctx.strokeStyle = 'rgba(255,200,87,0.5)';
+    ctx.strokeRect(bx0, laneY - 70, bw, 140);
+    ctx.font = '600 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#ffc857';
+    ctx.textAlign = 'center';
+    ctx.fillText('ENERGY BARRIER', barrierX, laneY - 80);
+
+    // lane line
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(0, laneY); ctx.lineTo(W, laneY); ctx.stroke();
+
+    flying.forEach(p => {
+      if (p.state === 'approaching') {
+        p.x += 3;
+        if (p.x >= bx0 && p.x <= bx1) {
+          p.state = p.willTunnel ? 'tunneling' : 'reflecting';
+        }
+      } else if (p.state === 'tunneling') {
+        p.x += 3;
+      } else if (p.state === 'reflecting') {
+        if (!p.bounced) { p.dir = -1; p.bounced = true; }
+        p.x += 3 * p.dir;
+      }
+      const inBarrier = p.x >= bx0 && p.x <= bx1;
+      const alpha = inBarrier ? 0.45 : 1;
+      ctx.beginPath();
+      ctx.fillStyle = p.state === 'reflecting' && p.bounced ? `rgba(255,95,168,${alpha})` : `rgba(51,229,255,${alpha})`;
+      ctx.arc(p.x, laneY, 5, 0, Math.PI*2);
+      ctx.fill();
+    });
+    flying = flying.filter(p => p.x > -20 && p.x < W + 20);
+  }
+  loop();
+
+  document.getElementById('tunFireBtn').addEventListener('click', fire);
+  document.getElementById('tunResetBtn').addEventListener('click', () => { attempts = 0; tunneled = 0; flying = []; updateReadout(); });
+  slider.addEventListener('input', updateReadout);
+  updateReadout();
+}
+
+/* =========================================================
+   MODULE 6: QUBITS & GATES — Bloch sphere with gate operations
+   ========================================================= */
+function initComputing() {
+  buildLearningPanels('computing-panels', 'co', 'Qubits & Quantum Gates',
+    'how a qubit (the basic unit of a quantum computer) differs from a classical bit by existing in superposition, and how quantum gates like X, Z, and Hadamard rotate its state on the Bloch sphere to perform computation, forming the basis of real quantum computers being built today');
+
+  const wrap = document.getElementById('compWrap');
+  const width = wrap.clientWidth || 600, height = 320;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+  camera.position.set(0, 1.6, 4.2);
+  camera.lookAt(0, 0, 0);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  wrap.appendChild(renderer.domElement);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const sphereGeo = new THREE.SphereGeometry(1.3, 24, 18);
+  const sphereMat = new THREE.MeshBasicMaterial({ color: 0x9b6dff, wireframe: true, transparent: true, opacity: 0.25 });
+  group.add(new THREE.Mesh(sphereGeo, sphereMat));
+
+  function makeAxisLine(dir, color) {
+    const geo = new THREE.BufferGeometry().setFromPoints([dir.clone().multiplyScalar(-1.5), dir.clone().multiplyScalar(1.5)]);
+    const mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.35 });
+    return new THREE.Line(geo, mat);
+  }
+  group.add(makeAxisLine(new THREE.Vector3(1,0,0), 0x9b6dff));
+  group.add(makeAxisLine(new THREE.Vector3(0,1,0), 0xffc857));
+  group.add(makeAxisLine(new THREE.Vector3(0,0,1), 0xff5fa8));
+
+  function makeLabel(text, pos, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.font = '600 34px Sora, sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(text, 64, 42);
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.55, 0.28, 1);
+    sprite.position.copy(pos);
+    return sprite;
+  }
+  group.add(makeLabel('|0⟩', new THREE.Vector3(0, 1.65, 0), '#ffc857'));
+  group.add(makeLabel('|1⟩', new THREE.Vector3(0, -1.65, 0), '#ffc857'));
+
+  let currentDir = new THREE.Vector3(0, 1, 0);
+  let targetDir = new THREE.Vector3(0, 1, 0);
+  const arrowHelper = new THREE.ArrowHelper(currentDir, new THREE.Vector3(0,0,0), 1.3, 0x9b6dff, 0.25, 0.15);
+  group.add(arrowHelper);
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+  let isDragging = false, prevX = 0, prevY = 0;
+  renderer.domElement.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevX, dy = e.clientY - prevY;
+    group.rotation.y += dx * 0.008;
+    group.rotation.x += dy * 0.008;
+    prevX = e.clientX; prevY = e.clientY;
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    currentDir.lerp(targetDir, 0.1);
+    if (currentDir.length() > 0.001) arrowHelper.setDirection(currentDir.clone().normalize());
+    if (!isDragging) group.rotation.y += 0.0015;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  const readout = document.getElementById('compReadout');
+
+  function rotate180(v, axis) {
+    const n = axis.clone().normalize();
+    const dot = v.dot(n);
+    return n.clone().multiplyScalar(2 * dot).sub(v);
+  }
+
+  document.getElementById('compResetBtn').addEventListener('click', () => {
+    targetDir = new THREE.Vector3(0, 1, 0);
+    readout.innerHTML = 'State: |0⟩ — a classical bit would just be "0". A qubit can do so much more.';
+  });
+
+  document.querySelectorAll('[data-gate]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gate = btn.dataset.gate;
+      let axis;
+      let label;
+      if (gate === 'X') { axis = new THREE.Vector3(1,0,0); label = 'X Gate applied — this flips |0⟩ ↔ |1⟩, like a classical NOT gate.'; }
+      if (gate === 'Z') { axis = new THREE.Vector3(0,0,1); label = 'Z Gate applied — this flips the phase, invisible on a classical bit but crucial for quantum algorithms.'; }
+      if (gate === 'H') { axis = new THREE.Vector3(1,0,1); label = 'Hadamard Gate applied — this creates a perfect superposition: 50/50 between |0⟩ and |1⟩.'; }
+      targetDir = rotate180(targetDir.clone(), axis);
+      readout.innerHTML = label;
+    });
+  });
+
+  document.getElementById('compMeasureBtn').addEventListener('click', () => {
+    const dot = currentDir.clone().normalize().dot(new THREE.Vector3(0,1,0));
+    const probZero = (dot + 1) / 2;
+    const result = Math.random() < probZero ? 0 : 1;
+    targetDir = result === 0 ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,-1,0);
+    readout.innerHTML = `Measured: <span class="hl">${result}</span> — this is the classical bit a quantum computer ultimately reads out.`;
+  });
+}
+
+/* =========================================================
+   MODULE: QUANTUM SPIN — Stern-Gerlach beam splitting
+   ========================================================= */
+function initSpin() {
+  buildLearningPanels('spin-panels', 'sg', 'Quantum Spin (Stern-Gerlach Experiment)',
+    'the discovery that particles have an intrinsic, quantized property called spin, demonstrated by the Stern-Gerlach experiment where a beam of particles sent through a magnetic field splits into exactly two discrete beams (spin-up and spin-down) rather than a continuous spread, proving that spin is quantized rather than continuous');
+
+  const wrap = document.getElementById('spin-wrap');
+  const canvas = document.getElementById('spinCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 320;
+  canvas.width = W; canvas.height = H;
+
+  const sourceX = 30, magnetX0 = W*0.35, magnetX1 = W*0.55, screenX = W - 50;
+  let particles = [];
+  let upCount = 0, downCount = 0;
+  let hits = [];
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    // magnet
+    ctx.fillStyle = 'rgba(155,109,255,0.12)';
+    ctx.fillRect(magnetX0, 20, magnetX1-magnetX0, H-40);
+    ctx.strokeStyle = 'rgba(155,109,255,0.4)';
+    ctx.strokeRect(magnetX0, 20, magnetX1-magnetX0, H-40);
+    ctx.font = '600 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#9b6dff';
+    ctx.textAlign = 'center';
+    ctx.fillText('MAGNETIC FIELD', (magnetX0+magnetX1)/2, 14);
+
+    // screen
+    ctx.strokeStyle = '#2a2e4a';
+    ctx.beginPath(); ctx.moveTo(screenX, 0); ctx.lineTo(screenX, H); ctx.stroke();
+
+    // accumulated hits — only two bands
+    hits.forEach(h => {
+      const grad = ctx.createRadialGradient(screenX, h.y, 0, screenX, h.y, 6);
+      const c = h.up ? '51,229,255' : '255,95,168';
+      grad.addColorStop(0, `rgba(${c},0.85)`);
+      grad.addColorStop(1, `rgba(${c},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(screenX, h.y, 6, 0, Math.PI*2); ctx.fill();
+    });
+
+    ctx.font = '600 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#33e5ff'; ctx.textAlign = 'right';
+    ctx.fillText('↑ up', screenX + 40, H*0.25);
+    ctx.fillStyle = '#ff5fa8';
+    ctx.fillText('↓ down', screenX + 40, H*0.75);
+
+    particles.forEach(p => {
+      p.x += 3.4;
+      if (p.x > magnetX0) {
+        const progress = Math.min(1, (p.x - magnetX0) / (screenX - magnetX0));
+        p.y = H/2 + (p.targetY - H/2) * progress;
+      }
+      ctx.beginPath();
+      ctx.fillStyle = '#ffc857';
+      ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    });
+    particles = particles.filter(p => {
+      if (p.x >= screenX) { hits.push({ y: p.targetY, up: p.up }); return false; }
+      return true;
+    });
+    if (hits.length > 400) hits.splice(0, hits.length - 400);
+  }
+  loop();
+
+  function fireBeam() {
+    for (let i = 0; i < 24; i++) {
+      setTimeout(() => {
+        const up = Math.random() < 0.5;
+        if (up) upCount++; else downCount++;
+        particles.push({ x: sourceX, y: H/2, up, targetY: up ? H*0.25 : H*0.75 });
+        updateReadout();
+      }, i * 60);
+    }
+  }
+  function updateReadout() {
+    document.getElementById('spinReadout').innerHTML = `<span class="hl">Up: ${upCount}</span> · <span class="hl">Down: ${downCount}</span> — always exactly two bands, never anything in between.`;
+  }
+
+  document.getElementById('spinFireBtn').addEventListener('click', fireBeam);
+  document.getElementById('spinResetBtn').addEventListener('click', () => {
+    particles = []; hits = []; upCount = 0; downCount = 0;
+    document.getElementById('spinReadout').textContent = 'Up: 0 · Down: 0 — no beam sent yet.';
+  });
+}
+
+/* =========================================================
+   MODULE: SCHRÖDINGER'S CAT — decoherence via environment slider
+   ========================================================= */
+function initCat() {
+  buildLearningPanels('cat-panels', 'cat', "Schrödinger's Cat & Decoherence",
+    'the thought experiment illustrating that quantum superposition, if left completely isolated, could in principle apply to macroscopic objects, and decoherence -- the real physical process by which interaction with the surrounding environment rapidly destroys superposition, which is why we never actually observe cats, coins, or other everyday objects in two states at once');
+
+  const box = document.getElementById('catBox');
+  const slider = document.getElementById('catSlider');
+  const readout = document.getElementById('catReadout');
+  let flickerTimer = null;
+  let settled = false;
+
+  function startFlicker() {
+    clearInterval(flickerTimer);
+    settled = false;
+    const exposure = Number(slider.value); // 0-100
+    const speed = Math.max(40, 700 - exposure * 6.5); // higher exposure = faster flicker = faster "collapse"
+    let ticks = 0;
+    const maxTicks = Math.max(3, Math.round(30 - exposure * 0.25));
+    flickerTimer = setInterval(() => {
+      ticks++;
+      box.textContent = Math.random() < 0.5 ? '🐱' : '💀';
+      box.style.opacity = 0.55 + Math.random()*0.45;
+      if (exposure > 8 && ticks >= maxTicks) {
+        clearInterval(flickerTimer);
+        settled = true;
+        const finalState = Math.random() < 0.5 ? '🐱 (alive)' : '💀 (not alive)';
+        box.textContent = finalState.split(' ')[0];
+        box.style.opacity = 1;
+        readout.innerHTML = `<span class="hl">Collapsed to a definite state: ${finalState}</span> — the environment "measured" the system, destroying the superposition.`;
+      }
+    }, speed);
+  }
+
+  slider.addEventListener('input', () => {
+    const exposure = Number(slider.value);
+    if (exposure < 8) {
+      clearInterval(flickerTimer);
+      settled = false;
+      let ticks = 0;
+      flickerTimer = setInterval(() => {
+        box.textContent = Math.random() < 0.5 ? '🐱' : '💀';
+        box.style.opacity = 0.55 + Math.random()*0.45;
+      }, 220);
+      readout.textContent = 'Fully isolated — the system stays in superposition (flickering between both outcomes) indefinitely.';
+    } else {
+      readout.innerHTML = `Environment coupling: <span class="hl">${exposure}%</span> — the higher this goes, the faster the superposition collapses to one definite outcome.`;
+      startFlicker();
+    }
+  });
+
+  // initial gentle flicker (fully isolated by default)
+  flickerTimer = setInterval(() => {
+    box.textContent = Math.random() < 0.5 ? '🐱' : '💀';
+    box.style.opacity = 0.55 + Math.random()*0.45;
+  }, 220);
+}
+
+/* =========================================================
+   MODULE: NO-CLONING THEOREM — classical vs quantum copy attempt
+   ========================================================= */
+function initCloning() {
+  buildLearningPanels('cloning-panels', 'nc', 'The No-Cloning Theorem',
+    'the proven result in quantum mechanics that it is impossible to create an identical, independent copy of an arbitrary unknown quantum state, in contrast to classical information (like a bit) which can always be copied perfectly; this underlies why quantum information is fundamentally different from classical information and why quantum cryptography can detect eavesdropping');
+
+  const wrap = document.getElementById('clone-wrap');
+  const canvas = document.getElementById('cloneCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 220;
+  canvas.width = W; canvas.height = H;
+  const readout = document.getElementById('cloneReadout');
+
+  let originalColor = '#33e5ff';
+  let copyColor = null;
+  let copyLabel = '';
+  let mode = null; // 'classical' | 'quantum'
+
+  function draw() {
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+    const y = H/2, r = 34;
+    const x1 = W*0.28, x2 = W*0.72;
+
+    // original
+    drawOrb(x1, y, originalColor, mode === 'classical' ? '0' : '?');
+    // arrow
+    ctx.strokeStyle = '#8b90ad55';
+    ctx.beginPath(); ctx.moveTo(x1+r+10, y); ctx.lineTo(x2-r-10, y); ctx.stroke();
+    ctx.fillStyle = '#8b90ad'; ctx.font='16px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('→ copy →', (x1+x2)/2, y-14);
+
+    // copy
+    if (copyColor) drawOrb(x2, y, copyColor, copyLabel);
+    else { ctx.strokeStyle = '#33344a'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(x2, y, r, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
+
+    function drawOrb(x, y, color, label) {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r+14);
+      grad.addColorStop(0, color+'aa'); grad.addColorStop(1, color+'00');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x,y,r+14,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#05060c'; ctx.font = '700 16px Sora, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(label, x, y+1);
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+  draw();
+
+  document.getElementById('cloneClassicalBtn').addEventListener('click', () => {
+    mode = 'classical';
+    originalColor = '#33e5ff';
+    copyColor = '#33e5ff';
+    copyLabel = '0';
+    draw();
+    readout.innerHTML = '<span class="hl">Success</span> — a classical bit is just information (a 0 or a 1). Reading it doesn\'t disturb it, so copying it perfectly is trivial.';
+  });
+
+  document.getElementById('cloneQuantumBtn').addEventListener('click', () => {
+    mode = 'quantum';
+    originalColor = '#9b6dff';
+    // simulate a failed/imperfect clone: random mismatched color
+    copyColor = Math.random() < 0.5 ? '#ff5fa8' : '#ffc857';
+    copyLabel = '≈';
+    draw();
+    readout.innerHTML = '<span class="hl">Failed</span> — measuring an unknown qubit to "read" it disturbs its state, so any attempted copy comes out wrong or incomplete. This is the No-Cloning Theorem.';
+  });
+
+  document.getElementById('cloneResetBtn').addEventListener('click', () => {
+    mode = null; copyColor = null; copyLabel = ''; originalColor = '#33e5ff';
+    draw();
+    readout.textContent = 'Pick an attempt above to see what happens.';
+  });
+}
+
+/* =========================================================
+   MODULE: QUANTUM ALGORITHMS — classical vs quantum search steps
+   ========================================================= */
+function initAlgorithms() {
+  buildLearningPanels('algorithms-panels', 'al', 'Quantum Algorithms & Real-World Uses',
+    'how algorithms like Grover\'s (quadratic speedup for searching an unsorted database, roughly sqrt(N) steps instead of N) and Shor\'s (efficient factoring of large numbers, threatening classical encryption) give quantum computers a genuine, provable advantage over classical computers for specific problems, and how this connects to real applications like quantum-safe cryptography, drug discovery, and optimization');
+
+  const wrap = document.getElementById('algo-wrap');
+  const canvas = document.getElementById('algoCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 220;
+  canvas.width = W; canvas.height = H;
+  const slider = document.getElementById('algoSlider');
+  const readout = document.getElementById('algoReadout');
+
+  function draw() {
+    const N = Number(slider.value);
+    const classicalSteps = N; // worst case linear search
+    const quantumSteps = Math.ceil(Math.sqrt(N)); // Grover's ~ sqrt(N)
+
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    const maxSteps = classicalSteps;
+    const barMaxW = W - 140;
+    const cW = Math.max(4, (classicalSteps / maxSteps) * barMaxW);
+    const qW = Math.max(4, (quantumSteps / maxSteps) * barMaxW);
+
+    drawBar(50, H*0.32, cW, '#ff5fa8', 'CLASSICAL', classicalSteps + ' steps (worst case)');
+    drawBar(50, H*0.62, qW, '#33e5ff', 'QUANTUM (Grover\'s)', quantumSteps + ' steps');
+
+    function drawBar(x, y, w, color, label, valueLabel) {
+      ctx.font = '600 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = color; ctx.textAlign = 'left';
+      ctx.fillText(label, x, y - 8);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(x, y, barMaxW, 22);
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, 22);
+      ctx.fillStyle = '#e9ecf7';
+      ctx.textAlign = 'left';
+      ctx.fillText(valueLabel, x + w + 10, y + 16);
+    }
+
+    const speedup = (classicalSteps / quantumSteps).toFixed(1);
+    readout.innerHTML = `For a database of <span class="hl">${N.toLocaleString()}</span> items, Grover's algorithm needs roughly <span class="hl">${speedup}×</span> fewer steps than a classical worst-case search.`;
+  }
+
+  slider.addEventListener('input', draw);
+  draw();
+}
+
+/* =========================================================
+   MODULE: QUANTUM CRYPTOGRAPHY (BB84 protocol)
+   ========================================================= */
+function initCryptography() {
+  buildLearningPanels('cryptography-panels', 'cr', 'Quantum Cryptography (BB84 Protocol)',
+    'the BB84 quantum key distribution protocol, in which Alice sends Bob photons encoded in randomly chosen bases, and any eavesdropper who intercepts and measures the photons unavoidably disturbs them (due to the no-cloning theorem and measurement disturbance), introducing a detectable error rate that reveals their presence');
+
+  const container = document.getElementById('bb84Container');
+  const readout = document.getElementById('bb84Readout');
+  const N = 20;
+
+  function randBit() { return Math.random() < 0.5 ? 0 : 1; }
+  function randBasis() { return Math.random() < 0.5 ? 'rect' : 'diag'; }
+
+  function runExchange(eveActive) {
+    const rows = { alice: [], aliceBasis: [], bob: [], bobBasis: [], match: [], eveGuess: [] };
+    let matches = 0, errors = 0;
+
+    for (let i = 0; i < N; i++) {
+      const aliceBit = randBit();
+      const aliceBasis = randBasis();
+      let effBit = aliceBit, effBasis = aliceBasis;
+      let eveBasis = null;
+
+      if (eveActive) {
+        eveBasis = randBasis();
+        if (eveBasis === aliceBasis) {
+          // Eve measured in the right basis -- no disturbance
+          effBit = aliceBit;
+          effBasis = aliceBasis;
+        } else {
+          // Wrong basis -- Eve's result is random, and she resends in her own (wrong) basis
+          effBit = randBit();
+          effBasis = eveBasis;
+        }
+      }
+
+      const bobBasis = randBasis();
+      let bobBit;
+      if (bobBasis === effBasis) {
+        bobBit = effBit;
+      } else {
+        bobBit = randBit(); // wrong basis -> random result
+      }
+
+      const basesMatch = aliceBasis === bobBasis;
+      if (basesMatch) {
+        matches++;
+        if (bobBit !== aliceBit) errors++;
+      }
+
+      rows.alice.push(aliceBit); rows.aliceBasis.push(aliceBasis);
+      rows.bob.push(bobBit); rows.bobBasis.push(bobBasis);
+      rows.match.push(basesMatch);
+    }
+
+    renderRows(rows);
+    const errorRate = matches > 0 ? (errors / matches * 100) : 0;
+    const verdict = errorRate > 10
+      ? `🚨 Error rate ${errorRate.toFixed(0)}% — an eavesdropper is almost certainly listening in! Alice and Bob would abort this key.`
+      : `✅ Error rate ${errorRate.toFixed(0)}% — clean channel. Alice and Bob keep their ${matches}-bit sifted key safely.`;
+    readout.innerHTML = `Kept <span class="hl">${matches} / ${N}</span> bits (bases matched) &nbsp;·&nbsp; ${verdict}`;
+  }
+
+  function renderRows(rows) {
+    container.innerHTML = '';
+    container.appendChild(makeRow('Alice sends', rows.alice, rows.aliceBasis, rows.match));
+    container.appendChild(makeRow('Bob measures', rows.bob, rows.bobBasis, rows.match));
+  }
+
+  function makeRow(label, bits, bases, matchArr) {
+    const row = document.createElement('div');
+    row.className = 'bb84-row';
+    const labelEl = document.createElement('div');
+    labelEl.className = 'bb84-label';
+    labelEl.textContent = label;
+    row.appendChild(labelEl);
+    bits.forEach((bit, i) => {
+      const chip = document.createElement('div');
+      chip.className = `photon-chip ${bases[i] === 'rect' ? 'rect' : 'diag'} bit${bit} ${matchArr[i] ? 'kept' : 'discard'}`;
+      const span = document.createElement('span');
+      span.textContent = bit;
+      chip.appendChild(span);
+      row.appendChild(chip);
+    });
+    return row;
+  }
+
+  document.getElementById('bb84RunBtn').addEventListener('click', () => runExchange(false));
+  document.getElementById('bb84EveBtn').addEventListener('click', () => runExchange(true));
+
+  // initial empty state
+  container.innerHTML = '<div style="color:var(--text-dim); font-family: var(--mono); font-size: 12px;">● dots = circles for the rectilinear basis, diamonds for the diagonal basis. Gold outline = kept in the final key.</div>';
+}
+
+/* =========================================================
+   MODULE: SUPERDENSE CODING (Quantum Information Theory)
+   ========================================================= */
+function initSuperdense() {
+  buildLearningPanels('superdense-panels', 'sd', 'Quantum Information Theory: Superdense Coding',
+    'the superdense coding protocol, in which two parties who pre-share one entangled pair of qubits can transmit 2 classical bits of information by physically sending only 1 qubit, by having the sender apply one of four possible gates to their half of the pair before sending it, and having the receiver perform a joint measurement on both halves to recover the exact message -- a striking demonstration that entanglement effectively doubles the information-carrying capacity of a quantum channel');
+
+  const wrap = document.getElementById('sd-wrap');
+  const canvas = document.getElementById('sdCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 260;
+  canvas.width = W; canvas.height = H;
+  const readout = document.getElementById('sdReadout');
+
+  const leftX = W * 0.26, rightX = W * 0.74, cy = H/2 - 10;
+  let photons = [];
+  for (let i = 0; i < 6; i++) photons.push({ t: i / 6 });
+  let chip = null; // {progress, message}
+  let bobMessage = null;
+  let gateLabel = '';
+
+  const GATE_FOR_MESSAGE = { '00': 'I (do nothing)', '01': 'X (bit flip)', '10': 'Z (phase flip)', '11': 'X then Z' };
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = 'rgba(155,109,255,0.35)';
+    ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(leftX, cy); ctx.lineTo(rightX, cy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    photons.forEach(p => {
+      p.t += 0.006; if (p.t > 1) p.t -= 1;
+      const x = leftX + (rightX - leftX) * p.t;
+      ctx.beginPath(); ctx.fillStyle = 'rgba(155,109,255,0.6)'; ctx.arc(x, cy, 2.2, 0, Math.PI*2); ctx.fill();
+    });
+
+    [[leftX, '#9b6dff', 'Alice'], [rightX, bobMessage ? '#33e5a1' : '#9b6dff', 'Bob']].forEach(([x, color, label]) => {
+      const grad = ctx.createRadialGradient(x, cy, 0, x, cy, 42);
+      grad.addColorStop(0, color + 'aa'); grad.addColorStop(1, color + '00');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, cy, 42, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, cy, 15, 0, Math.PI*2); ctx.fill();
+      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.fillStyle = '#8b90ad'; ctx.textAlign = 'center';
+      ctx.fillText(label, x, cy + 62);
+    });
+
+    if (gateLabel) {
+      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffc857'; ctx.textAlign = 'center';
+      ctx.fillText(gateLabel, leftX, cy - 58);
+    }
+
+    if (chip) {
+      chip.progress += 0.018;
+      const x = leftX + (rightX - leftX) * Math.min(1, chip.progress);
+      ctx.beginPath(); ctx.fillStyle = '#ffc857'; ctx.arc(x, cy - 22, 5, 0, Math.PI*2); ctx.fill();
+      ctx.font = '600 9px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffc857'; ctx.textAlign = 'center';
+      ctx.fillText('1 qubit', x, cy - 32);
+      if (chip.progress >= 1) {
+        bobMessage = chip.message;
+        readout.innerHTML = `Bob measured both qubits together and recovered <span class="hl">${bobMessage}</span> — exactly the message Alice sent. <b>📦 Qubits physically sent: 1 &nbsp; 📨 Classical bits delivered: 2</b>`;
+        chip = null;
+        gateLabel = '';
+      }
+    }
+  }
+  loop();
+
+  document.querySelectorAll('[data-msg]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = btn.dataset.msg;
+      bobMessage = null;
+      gateLabel = `Alice applies: ${GATE_FOR_MESSAGE[msg]}`;
+      chip = { progress: 0, message: msg };
+      readout.innerHTML = `Encoding message <span class="hl">${msg}</span> onto Alice's qubit, then sending it to Bob…`;
+    });
+  });
+  document.getElementById('sdResetBtn').addEventListener('click', () => {
+    chip = null; bobMessage = null; gateLabel = '';
+    readout.textContent = 'Pick a message above to send it using just one qubit.';
+  });
+}
+
+/* =========================================================
+   MODULE: QUANTUM TELEPORTATION
+   ========================================================= */
+function initTeleportation() {
+  buildLearningPanels('teleportation-panels', 'tp', 'Quantum Teleportation',
+    'the quantum teleportation protocol, in which Alice transfers an unknown quantum state to Bob using a pre-shared entangled pair plus 2 classical bits sent over an ordinary classical channel, destroying her own copy of the state in the process (consistent with the no-cloning theorem) and without transmitting any information faster than light, since Bob cannot recover the state until the classical bits physically arrive');
+
+  const wrap = document.getElementById('tp-wrap');
+  const canvas = document.getElementById('tpCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = wrap.clientWidth || 600, H = 260;
+  canvas.width = W; canvas.height = H;
+  const readout = document.getElementById('tpReadout');
+
+  const aliceX = W * 0.22, bobX = W * 0.78, cy = H/2 - 8;
+  let hue = Math.floor(Math.random() * 360);
+  let aliceDestroyed = false;
+  let bobReceived = false;
+  let classicalChips = null; // {progress, bits}
+  let phaseLabel = '';
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#04050a';
+    ctx.fillRect(0, 0, W, H);
+
+    // classical channel line (solid, below)
+    ctx.strokeStyle = 'rgba(139,144,173,0.35)';
+    ctx.beginPath(); ctx.moveTo(aliceX, cy + 50); ctx.lineTo(bobX, cy + 50); ctx.stroke();
+    ctx.font = '600 9px "JetBrains Mono", monospace'; ctx.fillStyle = '#8b90ad'; ctx.textAlign = 'center';
+    ctx.fillText('classical channel (2 bits)', (aliceX+bobX)/2, cy + 44);
+
+    // entanglement link (dashed, above)
+    ctx.strokeStyle = 'rgba(155,109,255,0.3)';
+    ctx.setLineDash([6,6]);
+    ctx.beginPath(); ctx.moveTo(aliceX, cy - 10); ctx.lineTo(bobX, cy - 10); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Alice's unknown state orb
+    const aliceColor = aliceDestroyed ? '#33344a' : `hsl(${hue},75%,60%)`;
+    drawOrb(aliceX, cy, aliceColor, 'Alice');
+    // Bob's orb
+    const bobColor = bobReceived ? `hsl(${hue},75%,60%)` : '#2a2e44';
+    drawOrb(bobX, cy, bobColor, 'Bob');
+
+    if (phaseLabel) {
+      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.fillStyle = '#ffc857'; ctx.textAlign = 'center';
+      ctx.fillText(phaseLabel, W/2, 20);
+    }
+
+    if (classicalChips) {
+      classicalChips.progress += 0.01;
+      const x = aliceX + (bobX - aliceX) * Math.min(1, classicalChips.progress);
+      ctx.font = '700 13px "JetBrains Mono", monospace'; ctx.fillStyle = '#e9ecf7'; ctx.textAlign = 'center';
+      ctx.fillText(classicalChips.bits, x, cy + 46);
+      ctx.beginPath(); ctx.fillStyle = '#8b90ad'; ctx.arc(x, cy + 50, 3, 0, Math.PI*2); ctx.fill();
+      if (classicalChips.progress >= 1) {
+        classicalChips = null;
+        bobReceived = true;
+        phaseLabel = '';
+        readout.innerHTML = `Bob applied the correction gate indicated by the 2 classical bits — his qubit is now an <span class="hl">exact match</span> of Alice's original state. Alice's copy was destroyed in the process (no-cloning theorem), and nothing traveled faster than light — the classical bits had to physically arrive first.`;
+      }
+    }
+
+    function drawOrb(x, y, color, label) {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, 40);
+      grad.addColorStop(0, color + (color.startsWith('#') ? 'aa' : ''));
+      grad.addColorStop(1, color.startsWith('#') ? color + '00' : 'transparent');
+      if (!color.startsWith('#')) { ctx.fillStyle = color; } else { ctx.fillStyle = grad; }
+      ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI*2); ctx.fill();
+      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.fillStyle = '#8b90ad'; ctx.textAlign = 'center';
+      ctx.fillText(label, x, y - 56);
+    }
+  }
+  loop();
+
+  document.getElementById('tpRunBtn').addEventListener('click', () => {
+    if (aliceDestroyed) return;
+    phaseLabel = 'Alice performs a joint (Bell) measurement…';
+    const bits = (Math.random()<0.5?'0':'1') + (Math.random()<0.5?'0':'1');
+    setTimeout(() => {
+      aliceDestroyed = true;
+      phaseLabel = 'Sending 2 classical bits to Bob…';
+      readout.innerHTML = `Alice's measurement produced the random outcome <span class="hl">${bits}</span>. She now sends these 2 classical bits to Bob so he knows which correction to apply.`;
+      classicalChips = { progress: 0, bits };
+    }, 900);
+  });
+
+  document.getElementById('tpResetBtn').addEventListener('click', () => {
+    hue = Math.floor(Math.random() * 360);
+    aliceDestroyed = false; bobReceived = false; classicalChips = null; phaseLabel = '';
+    readout.textContent = 'Alice holds an unknown quantum state (colored) that Bob needs — without moving the particle itself.';
+  });
+}
+
+/* =========================================================
+   MODULE: CLASSICAL VS QUANTUM COMPUTING
+   ========================================================= */
+function initClassicalVsQuantum() {
+  buildLearningPanels('classicalvsquantum-panels', 'cvq', 'Classical vs. Quantum Computing',
+    'the basic, beginner-level comparison between classical computers (which use bits that are always definitely 0 or 1) and quantum computers (which use qubits that can be in a superposition of 0 and 1 at once), including what each is good at today and how mature each technology is -- explained as simply as possible, avoiding jargon');
+
+  document.getElementById('cvqBackBtn').addEventListener('click', () => showView('domain-computing'));
+
+  let classicalValue = 0;
+  const classicalCoin = document.getElementById('classicalCoin');
+  document.getElementById('classicalFlipBtn').addEventListener('click', () => {
+    classicalValue = classicalValue === 0 ? 1 : 0;
+    classicalCoin.textContent = classicalValue;
+  });
+
+  const quantumCoin = document.getElementById('quantumCoin');
+  const quantumCaption = document.getElementById('quantumCaption');
+  let spinning = false;
+
+  document.getElementById('quantumSpinBtn').addEventListener('click', () => {
+    spinning = true;
+    quantumCoin.classList.add('spinning');
+    quantumCoin.textContent = '?';
+    quantumCaption.innerHTML = 'Right now it\'s <span class="hl">both 0 and 1 at once</span> — genuinely undetermined, not just secretly one or the other.';
+  });
+
+  document.getElementById('quantumMeasureBtn').addEventListener('click', () => {
+    if (!spinning) return;
+    spinning = false;
+    quantumCoin.classList.remove('spinning');
+    const result = Math.random() < 0.5 ? 0 : 1;
+    quantumCoin.textContent = result;
+    quantumCaption.innerHTML = `The moment you measured it, it landed on <span class="hl">${result}</span> — just like a spinning coin has to land on one side once it hits the table.`;
+  });
+}
+</script>
+</body>
+</html>

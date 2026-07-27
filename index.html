@@ -521,7 +521,7 @@
         <div class="m-num">05 · FOUNDATIONS</div>
         <div class="m-icon">🚧</div>
         <h3>Quantum Tunneling</h3>
-        <p>How particles occasionally pass straight through barriers they classically shouldn't cross.</p>
+        <p>How particles occasionally pass straight through barriers they shouldn't cross.</p>
       </div>
       <div class="module-card" data-module="spin">
         <div class="card-check" id="check-spin">✓</div>
@@ -1338,11 +1338,16 @@ async function sendStubChat() {
 
 async function callClaudeText(system, userMessage, history) {
   const messages = [...(history || []), { role: "user", content: userMessage }];
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await fetch("/api/claude", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model: MODEL, max_tokens: 500, system: system, messages: messages })
   });
+  if (!response.ok) {
+    let detail = '';
+    try { const errData = await response.json(); detail = errData.error || ''; } catch (e) {}
+    throw new Error(detail || `Server error (${response.status})`);
+  }
   const data = await response.json();
   const block = (data.content || []).find(b => b.type === "text");
   if (!block) throw new Error("No response received.");

@@ -1169,10 +1169,10 @@ function updateDomainStatuses() {
       el.textContent = '🔜 Coming Soon';
       el.style.background = '#ffc85714'; el.style.color = '#ffc857'; el.style.border = '1px solid #ffc85733';
     } else if (val.built === val.total) {
-      el.textContent = '';
+      el.textContent = '✅ Fully Built';
       el.style.background = '#33e5a114'; el.style.color = '#33e5a1'; el.style.border = '1px solid #33e5a133';
     } else {
-      el.textContent = ``;
+      el.textContent = `🚧 ${val.built}/${val.total} Built`;
       el.style.background = '#33e5ff14'; el.style.color = '#33e5ff'; el.style.border = '1px solid #33e5ff33';
     }
   });

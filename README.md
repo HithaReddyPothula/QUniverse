@@ -12,10 +12,10 @@ Quantum science is exciting but hard to break into as a beginner. Concepts like 
 
 1. Start with **Foundations** — 10 interactive modules covering superposition, entanglement, uncertainty, tunneling, and more.
 2. Branch into a specialization:
-   - **Computing & Information Science** — qubits, gates, algorithms, superdense coding
-   - **Communication & Security** — quantum cryptography (BB84), teleportation
-   - **Sensing, Metrology & Imaging** — coming soon
-   - **Advanced Theory** — coming soon
+   - **Computing & Information Science** 
+   - **Communication & Security**
+   - **Sensing, Metrology & Imaging** 
+   - **Advanced Theory** 
 
 ## Features
 
@@ -25,7 +25,7 @@ Quantum science is exciting but hard to break into as a beginner. Concepts like 
 
 ## Tech Stack
 
-JavaScript, HTML/CSS, Three.js, Vercel Serverless Functions, OpenAI API
+JavaScript, HTML/CSS, Three.js, Vercel, OpenAI API
 
 ## Setup
 
@@ -35,4 +35,4 @@ JavaScript, HTML/CSS, Three.js, Vercel Serverless Functions, OpenAI API
 
 ---
 
-Built as a final project for a coding & AI course.
+Built as a final project for Microsoft Coding & AI Worldwide projects. 
